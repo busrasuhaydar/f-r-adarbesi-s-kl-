@@ -3,42 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tubes Cursor</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <title>Tüp Animasyonu</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #info {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            text-align: center;
+            z-index: 100;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            cursor: pointer;
+            padding: 10px 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        #info:hover {
+            background: rgba(0,0,0,0.5);
+            transform: translateX(-50%) scale(1.05);
+        }
+    </style>
 </head>
 <body>
-    <div id="app">
-        <div id="canvas"></div>
-        <a href="#">Click to change colors</a>
-    </div>
+    <canvas id="canvas"></canvas>
+    <div id="info">Tıklayarak renkleri değiştirin</div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+
     <script type="module">
-        import { Tubes1Cursor } from "https://cdn.jsdelivr.net/npm/threejs-components@latest/build/module.cdn.min.js"
+        import * as THREE from 'three';
 
-        const app = Tubes1Cursor(document.getElementById('canvas'), {
-          tubes: {
-            colors: ["#f967fb", "#53bc28", "#6958d5"],
-            lights: {
-              intensity: 200,
-              colors: ["#83f36e", "#fe8a2e", "#ff008a", "#60aed5"]
+        let scene, camera, renderer;
+        let tubes = [];
+        let mouseX = 0, mouseY = 0;
+        let targetX = 0, targetY = 0;
+
+        const colors = [
+            new THREE.Color('#f967fb'),
+            new THREE.Color('#53bc28'),
+            new THREE.Color('#6958d5')
+        ];
+
+        const lightColors = [
+            new THREE.Color('#83f36e'),
+            new THREE.Color('#fe8a2e'),
+            new THREE.Color('#ff008a'),
+            new THREE.Color('#60aed5')
+        ];
+
+        init();
+        animate();
+
+        function init() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color('#000000');
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(
+                75,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            camera.position.z = 50;
+
+            // Renderer
+            const canvas = document.getElementById('canvas');
+            renderer = new THREE.WebGLRenderer({
+                canvas,
+                antialias: true,
+                alpha: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            lightColors.forEach((color, i) => {
+                const light = new THREE.PointLight(color, 200, 100);
+                const angle = (i / lightColors.length) * Math.PI * 2;
+                light.position.set(
+                    Math.cos(angle) * 30,
+                    Math.sin(angle) * 30,
+                    10
+                );
+                scene.add(light);
+            });
+
+            // Create tubes
+            createTubes();
+
+            // Event listeners
+            window.addEventListener('resize', onWindowResize);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('click', changeColors);
+            document.addEventListener('touchmove', onTouchMove);
+            document.addEventListener('touchstart', changeColors);
+        }
+
+        function createTubes() {
+            // Clear existing tubes
+            tubes.forEach(tube => scene.remove(tube));
+            tubes = [];
+
+            // Create multiple intertwined tubes
+            for (let i = 0; i < 3; i++) {
+                const points = [];
+                const segments = 100;
+
+                for (let j = 0; j <= segments; j++) {
+                    const t = j / segments;
+                    const angle = t * Math.PI * 4 + (i * Math.PI * 2 / 3);
+                    const radius = 10 + Math.sin(t * Math.PI * 2) * 5;
+
+                    points.push(new THREE.Vector3(
+                        Math.cos(angle) * radius,
+                        Math.sin(angle) * radius,
+                        (t - 0.5) * 50
+                    ));
+                }
+
+                const curve = new THREE.CatmullRomCurve3(points);
+                const tubeGeometry = new THREE.TubeGeometry(curve, 100, 0.8, 8, false);
+                const material = new THREE.MeshPhongMaterial({
+                    color: colors[i],
+                    shininess: 100,
+                    specular: 0x444444,
+                    emissive: colors[i],
+                    emissiveIntensity: 0.2
+                });
+
+                const tube = new THREE.Mesh(tubeGeometry, material);
+                scene.add(tube);
+                tubes.push(tube);
             }
-          }
-        })
+        }
 
-        document.body.addEventListener('click', () => {
-          const colors = randomColors(3)
-          const lightsColors = randomColors(4)
-          console.log(colors, lightsColors)
-          app.tubes.setColors(colors)
-          app.tubes.setLightsColors(lightsColors)
-        })
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
 
-        function randomColors (count) {
-            return new Array(count)
-                .fill(0)
-                .map(() => "#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0'))
+        function onMouseMove(event) {
+            mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+        }
+
+        function onTouchMove(event) {
+            if (event.touches.length > 0) {
+                mouseX = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
+                mouseY = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
+            }
+        }
+
+        function changeColors() {
+            // Generate random colors for tubes
+            for (let i = 0; i < tubes.length; i++) {
+                const newColor = new THREE.Color(
+                    Math.random(),
+                    Math.random(),
+                    Math.random()
+                );
+                tubes[i].material.color = newColor;
+                tubes[i].material.emissive = newColor;
+                colors[i] = newColor;
+            }
+
+            // Change light colors
+            const lights = scene.children.filter(child => child instanceof THREE.PointLight);
+            lights.forEach(light => {
+                light.color = new THREE.Color(
+                    Math.random(),
+                    Math.random(),
+                    Math.random()
+                );
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Smooth camera movement based on mouse
+            targetX = mouseX * 10;
+            targetY = mouseY * 10;
+
+            camera.position.x += (targetX - camera.position.x) * 0.05;
+            camera.position.y += (targetY - camera.position.y) * 0.05;
+            camera.lookAt(scene.position);
+
+            // Rotate tubes
+            tubes.forEach((tube, i) => {
+                tube.rotation.x += 0.002 + i * 0.001;
+                tube.rotation.y += 0.001 + i * 0.0005;
+                tube.rotation.z += 0.003;
+            });
+
+            renderer.render(scene, camera);
         }
     </script>
 </body>
