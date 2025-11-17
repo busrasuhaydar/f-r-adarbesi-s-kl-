@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Tubes Cursor</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+        }
+        .status {
+            background: #2a2a2a;
+            border: 2px solid #444;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .success { border-color: #4CAF50; }
+        .error { border-color: #f44336; }
+        .info { border-color: #2196F3; }
+        pre {
+            background: #000;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #canvas-container {
+            width: 100%;
+            height: 400px;
+            background: #000;
+            margin: 20px 0;
+            border: 2px solid #444;
+            border-radius: 8px;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Tubes Cursor - Test Sayfası</h1>
+
+    <div class="status info">
+        <h3>📋 Test Adımları:</h3>
+        <ol id="test-steps">
+            <li>Tarayıcı kontrolü...</li>
+            <li>CDN bağlantısı kontrolü...</li>
+            <li>Module yükleme...</li>
+            <li>Canvas oluşturma...</li>
+            <li>Tubes1Cursor başlatma...</li>
+        </ol>
+    </div>
+
+    <div id="status-container"></div>
+
+    <div id="canvas-container">
+        <div id="canvas"></div>
+    </div>
+
+    <div>
+        <button onclick="location.href='index.html'">Ana Sayfaya Git</button>
+        <button onclick="location.reload()">Testi Tekrar Çalıştır</button>
+    </div>
+
+    <div class="status info">
+        <h3>ℹ️ Notlar:</h3>
+        <ul>
+            <li>Modern bir tarayıcı kullanıyorsanız (Chrome 94+, Firefox 93+, Safari 15+), bu sayfa çalışmalıdır</li>
+            <li>Eğer CORS hatası alırsanız, HTTP server ile açmanız gerekir</li>
+            <li>WebGPU desteklenmeyen tarayıcılarda çalışmayabilir</li>
+        </ul>
+    </div>
+
+    <script type="module">
+        const statusContainer = document.getElementById('status-container');
+        const steps = document.getElementById('test-steps');
+
+        function updateStep(index, text, success = true) {
+            const items = steps.getElementsByTagName('li');
+            if (items[index]) {
+                items[index].innerHTML = `${success ? '✅' : '❌'} ${text}`;
+                items[index].style.color = success ? '#4CAF50' : '#f44336';
+            }
+        }
+
+        function addStatus(title, message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `<h3>${title}</h3><pre>${message}</pre>`;
+            statusContainer.appendChild(div);
+        }
+
+        async function runTests() {
+            try {
+                // Step 1: Browser check
+                updateStep(0, 'Tarayıcı kontrolü - OK', true);
+                addStatus('✅ Tarayıcı Bilgisi',
+                    `User Agent: ${navigator.userAgent}\nPlatform: ${navigator.platform}`,
+                    'success');
+
+                // Step 2: CDN check
+                updateStep(1, 'CDN bağlantısı kontrolü...', true);
+
+                // Step 3: Module loading
+                updateStep(2, 'Module yükleniyor...', true);
+                const module = await import("https://unpkg.com/threejs-components@latest/build/module.cdn.min.js");
+
+                updateStep(2, 'Module yüklendi - OK', true);
+                addStatus('✅ Module Bilgisi',
+                    `Tubes1Cursor tipi: ${typeof module.Tubes1Cursor}\nMevcut exports: ${Object.keys(module).join(', ')}`,
+                    'success');
+
+                // Step 4: Canvas check
+                updateStep(3, 'Canvas element kontrolü...', true);
+                const canvasElement = document.getElementById('canvas');
+
+                if (!canvasElement) {
+                    throw new Error('Canvas element bulunamadı!');
+                }
+
+                updateStep(3, 'Canvas bulundu - OK', true);
+
+                // Step 5: Initialize Tubes1Cursor
+                updateStep(4, 'Tubes1Cursor başlatılıyor...', true);
+
+                const { Tubes1Cursor } = module;
+
+                const app = Tubes1Cursor(canvasElement, {
+                    tubes: {
+                        colors: ["#f967fb", "#53bc28", "#6958d5"],
+                        lights: {
+                            intensity: 200,
+                            colors: ["#83f36e", "#fe8a2e", "#ff008a", "#60aed5"]
+                        }
+                    }
+                });
+
+                updateStep(4, 'Tubes1Cursor başlatıldı - OK ✨', true);
+                addStatus('✅ Başarılı!',
+                    `App instance: ${typeof app}\nTüp animasyonları çalışıyor!\nTıklayarak renkleri değiştirebilirsiniz.`,
+                    'success');
+
+                // Add click event
+                document.body.addEventListener('click', () => {
+                    const colors = randomColors(3);
+                    const lightsColors = randomColors(4);
+                    app.tubes.setColors(colors);
+                    app.tubes.setLightsColors(lightsColors);
+                    addStatus('🎨 Renkler Değişti',
+                        `Tubes: ${colors.join(', ')}\nLights: ${lightsColors.join(', ')}`,
+                        'info');
+                });
+
+                function randomColors(count) {
+                    return new Array(count)
+                        .fill(0)
+                        .map(() => "#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0'));
+                }
+
+            } catch (error) {
+                const failedStep = [...steps.getElementsByTagName('li')].findIndex(li =>
+                    li.textContent.includes('...'));
+
+                if (failedStep >= 0) {
+                    updateStep(failedStep, steps.getElementsByTagName('li')[failedStep].textContent.replace('...', ' - HATA'), false);
+                }
+
+                addStatus('❌ Hata Oluştu',
+                    `Hata: ${error.message}\n\nStack: ${error.stack}\n\nÇözüm: Lütfen HTTP server kullanarak açmayı deneyin:\npython3 -m http.server 8000`,
+                    'error');
+
+                console.error('Test hatası:', error);
+            }
+        }
+
+        // Run tests on load
+        runTests();
+    </script>
+</body>
+</html>

@@ -49,30 +49,55 @@
         <a href="#">Click to change colors</a>
     </div>
     <script type="module">
-        import { Tubes1Cursor } from "https://cdn.skypack.dev/threejs-components@latest"
+        try {
+            console.log('Script started...');
 
-        const app = Tubes1Cursor(document.getElementById('canvas'), {
-          tubes: {
-            colors: ["#f967fb", "#53bc28", "#6958d5"],
-            lights: {
-              intensity: 200,
-              colors: ["#83f36e", "#fe8a2e", "#ff008a", "#60aed5"]
+            const module = await import("https://unpkg.com/threejs-components@latest/build/module.cdn.min.js");
+            console.log('Module loaded:', module);
+            console.log('Tubes1Cursor:', module.Tubes1Cursor);
+
+            const { Tubes1Cursor } = module;
+
+            const canvasElement = document.getElementById('canvas');
+            console.log('Canvas element:', canvasElement);
+
+            const app = Tubes1Cursor(canvasElement, {
+              tubes: {
+                colors: ["#f967fb", "#53bc28", "#6958d5"],
+                lights: {
+                  intensity: 200,
+                  colors: ["#83f36e", "#fe8a2e", "#ff008a", "#60aed5"]
+                }
+              }
+            });
+
+            console.log('App initialized:', app);
+
+            document.body.addEventListener('click', () => {
+              const colors = randomColors(3);
+              const lightsColors = randomColors(4);
+              console.log('New colors:', colors, lightsColors);
+              app.tubes.setColors(colors);
+              app.tubes.setLightsColors(lightsColors);
+            });
+
+            function randomColors (count) {
+                return new Array(count)
+                    .fill(0)
+                    .map(() => "#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0'));
             }
-          }
-        })
 
-        document.body.addEventListener('click', () => {
-          const colors = randomColors(3)
-          const lightsColors = randomColors(4)
-          console.log(colors, lightsColors)
-          app.tubes.setColors(colors)
-          app.tubes.setLightsColors(lightsColors)
-        })
-
-        function randomColors (count) {
-            return new Array(count)
-                .fill(0)
-                .map(() => "#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0'))
+            console.log('✅ Everything loaded successfully!');
+        } catch (error) {
+            console.error('❌ Error:', error);
+            document.body.innerHTML += `<div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 2px solid red; border-radius: 10px; max-width: 80%; z-index: 9999;">
+                <h2 style="color: red; margin: 0 0 10px 0;">Hata / Error</h2>
+                <p style="margin: 0; font-family: monospace; color: black;">${error.message}</p>
+                <p style="margin: 10px 0 0 0; font-size: 12px; color: #666;">
+                    Lütfen tarayıcı konsolunu kontrol edin veya HTTP server ile açın.<br>
+                    Please check browser console or open with HTTP server.
+                </p>
+            </div>`;
         }
     </script>
 </body>
