@@ -7,7 +7,41 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body, html, #app {
+          margin: 0;
+          width: 100%;
+          height: 100%;
+        }
+
+        body {
+          touch-action: none;
+        }
+
+        #app {
+          height: 100%;
+          font-family: "Montserrat", serif;
+        }
+
+        #canvas {
+          position: fixed;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          overflow: hidden;
+        }
+
+        a {
+          position: fixed;
+          bottom: 30px;
+          left: 50%;
+          transform: translateX(-50%);
+          color: #fff;
+          text-decoration: none;
+          text-shadow: 1px 1px 2px black;
+        }
+    </style>
 </head>
 <body>
     <div id="app">
@@ -15,7 +49,7 @@
         <a href="#">Click to change colors</a>
     </div>
     <script type="module">
-        import { Tubes1Cursor } from "https://cdn.jsdelivr.net/npm/threejs-components@latest/build/module.cdn.min.js"
+        import { Tubes1Cursor } from "https://cdn.skypack.dev/threejs-components@latest"
 
         const app = Tubes1Cursor(document.getElementById('canvas'), {
           tubes: {
