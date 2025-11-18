@@ -2676,33 +2676,35 @@
                 const frontNearest = findNearestPointOnPath(frontWheelPos);
                 const frontRoadHeight = frontNearest && frontNearest.point ? frontNearest.point.y : currentRoadHeight;
                 
-                // Pitch'i ön ve arka yükseklik farkından hesapla - KUSURSUZ!
+                // Pitch'i ön ve arka yükseklik farkından hesapla - DÜZELTİLMİŞ!
                 const heightDifference = frontRoadHeight - rearRoadHeight;
                 const wheelBase = carLength * 2; // Toplam araç uzunluğu
-                
+
                 if (Math.abs(heightDifference) > 0.05) {
-                    // 🎯 EKSİ YOK! Pozitif yükseklik farkı = pozitif pitch = burun YUKARI!
+                    // 🎯 Pozitif yükseklik farkı (yokuş yukarı) = NEGATİF pitch = burun YUKARI!
+                    // Three.js'de negative rotation.x = burun yukarı kalkması
                     let targetPitch = Math.atan2(heightDifference, wheelBase);
-                    
-                    // PITCH ÇARPANI - ÇOK YUMUŞAK!
-                    targetPitch *= 0.40; // 🎯 0.80 → 0.40 (yarısı!)
-                    
+
+                    // PITCH ÇARPANI - ARTIRILMIŞ HASSASİYET!
+                    targetPitch *= 0.85; // 🎯 0.40 → 0.85 (daha hassas!)
+
                     if (!car.userData.currentPitch) car.userData.currentPitch = 0;
-                    
+
                     const pitchDiff = targetPitch - car.userData.currentPitch;
-                    const pitchSmooth = 0.24; // Hızlı tepki
+                    const pitchSmooth = 0.35; // Daha hızlı tepki (0.24 → 0.35)
                     car.userData.currentPitch += pitchDiff * pitchSmooth;
-                    
+
                     // Pitch limit
                     const maxPitch = Math.PI / 5.2; // 35 derece
                     car.userData.currentPitch = Math.max(-maxPitch, Math.min(maxPitch, car.userData.currentPitch));
-                    
-                    car.rotation.x = car.userData.currentPitch;
+
+                    // ❗ İŞARET DÜZELTMESİ: Negatif çarpan ile doğru yön!
+                    car.rotation.x = -car.userData.currentPitch;
                 } else {
                     // Düz yolda pitch yumuşak sıfırla
                     if (!car.userData.currentPitch) car.userData.currentPitch = 0;
                     car.userData.currentPitch *= 0.88;
-                    car.rotation.x = car.userData.currentPitch;
+                    car.rotation.x = -car.userData.currentPitch;
                 }
             }
         }
