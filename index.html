@@ -2681,8 +2681,7 @@
                 const wheelBase = carLength * 2; // Toplam araç uzunluğu
 
                 if (Math.abs(heightDifference) > 0.05) {
-                    // 🎯 Pozitif yükseklik farkı (yokuş yukarı) = NEGATİF pitch = burun YUKARI!
-                    // Three.js'de negative rotation.x = burun yukarı kalkması
+                    // 🎯 Yokuş yukarı → burun aşağı | Yokuş aşağı → burun yukarı
                     let targetPitch = Math.atan2(heightDifference, wheelBase);
 
                     // PITCH ÇARPANI - ARTIRILMIŞ HASSASİYET!
@@ -2698,13 +2697,13 @@
                     const maxPitch = Math.PI / 5.2; // 35 derece
                     car.userData.currentPitch = Math.max(-maxPitch, Math.min(maxPitch, car.userData.currentPitch));
 
-                    // ❗ İŞARET DÜZELTMESİ: Negatif çarpan ile doğru yön!
-                    car.rotation.x = -car.userData.currentPitch;
+                    // ✅ Direkt uygula: Pozitif = burun aşağı, Negatif = burun yukarı
+                    car.rotation.x = car.userData.currentPitch;
                 } else {
                     // Düz yolda pitch yumuşak sıfırla
                     if (!car.userData.currentPitch) car.userData.currentPitch = 0;
                     car.userData.currentPitch *= 0.88;
-                    car.rotation.x = -car.userData.currentPitch;
+                    car.rotation.x = car.userData.currentPitch;
                 }
             }
         }
