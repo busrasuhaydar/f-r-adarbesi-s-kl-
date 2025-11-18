@@ -2,103 +2,2963 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tubes Cursor</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <title>Infinity Race v5 - 3 KELİME = 1 SATIR - Mobile & VR</title>
     <style>
-        body, html, #app {
-          margin: 0;
-          width: 100%;
-          height: 100%;
-        }
-
         body {
-          touch-action: none;
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
-
-        #app {
-          height: 100%;
-          font-family: "Montserrat", serif;
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
         }
-
-        #canvas {
-          position: fixed;
-          top: 0;
-          right: 0;
-          bottom: 0;
-          left: 0;
-          overflow: hidden;
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 32px;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            line-height: 1.5;
         }
-
-        a {
-          position: fixed;
-          bottom: 30px;
-          left: 50%;
-          transform: translateX(-50%);
-          color: #fff;
-          text-decoration: none;
-          text-shadow: 1px 1px 2px black;
+        
+        /* 📱 MOBİL KONTROLLER */
+        .mobile-controls {
+            position: fixed;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        /* 📷 CAMERA MODE BUTTON - SOL ÜST */
+        #cameraBtn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            width: 50px;  /* 60→50 */
+            height: 50px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;  /* 28→24 */
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 101;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        #cameraBtn:active {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0.95);
+        }
+        
+        /* 🎮 STEERING - SOL ALT */
+        #steeringPad {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 140px;
+            height: 140px;
+            pointer-events: auto;
+        }
+        .steering-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        .steering-arrow {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(5px);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.1s;
+        }
+        .steering-arrow:active {
+            background: rgba(255, 255, 255, 0.5);
+            transform: scale(0.9);
+        }
+        #leftArrow {
+            left: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        #rightArrow {
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        /* 🚀 ACCELERATION - SAĞ ALT */
+        #accelPad {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 140px;
+            height: 140px;
+            pointer-events: auto;
+        }
+        .accel-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        .accel-arrow {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(5px);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.1s;
+        }
+        .accel-arrow:active {
+            background: rgba(255, 255, 255, 0.5);
+            transform: scale(0.9);
+        }
+        #upArrow {
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        #downArrow {
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        /* 🎮 VR BUTTON - Gizli, sadece VR var ise göster */
+        #vrBtn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            width: 50px;  /* 60→50 */
+            height: 50px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            pointer-events: auto;
+            display: none;  /* Başlangıçta gizli! */
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;  /* 24→20 */
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 101;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        #vrBtn:active {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0.95);
+        }
+        #vrBtn.vr-active {
+            background: rgba(100, 255, 100, 0.3);
+            border-color: rgba(100, 255, 100, 0.5);
+        }
+        
+        /* Desktop'ta kontrolleri gizle */
+        @media (min-width: 768px) {
+            #cameraBtn, #steeringPad, #accelPad {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="app">
-        <div id="canvas"></div>
-        <a href="#">Click to change colors</a>
+    <div id="loading">Welcome to Su Su Land!<br>ARE YOU READY?</div>
+
+    <!-- 📱 MOBİL KONTROLLER -->
+    <div class="mobile-controls">
+        <!-- 📷 CAMERA MODE -->
+        <div id="cameraBtn">📷</div>
+        
+        <!-- 🎮 VR BUTTON -->
+        <div id="vrBtn">🥽</div>
+        
+        <!-- 🎮 STEERING PAD -->
+        <div id="steeringPad">
+            <div class="steering-container">
+                <div class="steering-arrow" id="leftArrow">←</div>
+                <div class="steering-arrow" id="rightArrow">→</div>
+            </div>
+        </div>
+        
+        <!-- 🚀 ACCELERATION PAD -->
+        <div id="accelPad">
+            <div class="accel-container">
+                <div class="accel-arrow" id="upArrow">↑</div>
+                <div class="accel-arrow" id="downArrow">↓</div>
+            </div>
+        </div>
     </div>
-    <script type="module">
-        try {
-            console.log('Script started...');
 
-            const module = await import("https://unpkg.com/threejs-components@latest/build/module.cdn.min.js");
-            console.log('Module loaded:', module);
-            console.log('Tubes1Cursor:', module.Tubes1Cursor);
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script>
+        // 📱 MOBİL CIHAZ TESPİTİ
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 4000);
+        
+        // 📱 BALANCED RENDERER - Kaliteli ama performanslı!
+        const renderer = new THREE.WebGLRenderer({ 
+            antialias: true,  // ✅ Antialias GERİ! (Güzel görünüm için)
+            powerPreference: "high-performance",
+            precision: "highp",  // ✅ Yüksek precision GERİ!
+            stencil: false,
+            depth: true,
+            alpha: false
+        });
+        
+        // 📱 DAHA İYİ ÇÖZÜNÜRLÜK - Akıllıca ayarlandı!
+        renderer.setPixelRatio(isMobile ? 1.75 : Math.min(window.devicePixelRatio, 2));  // 🎯 1.5→1.75 daha net!
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        
+        // 📱 Basit shadow - ama var!
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.BasicShadowMap;  // PCF yerine Basic!
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        renderer.physicallyCorrectLights = true;
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        
+        // 🥽 VR SUPPORT - Ama buton gösterme!
+        renderer.xr.enabled = true;
+        
+        document.body.appendChild(renderer.domElement);
+        
+        // 🚗 DAHA İYİ CubeCamera - 768 mükemmel denge!
+        const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(isMobile ? 768 : 1024, {  // 🎯 512→768!
+            format: THREE.RGBFormat,
+            generateMipmaps: false,
+            minFilter: THREE.LinearFilter,
+            magFilter: THREE.LinearFilter,
+            encoding: THREE.sRGBEncoding
+        });
+        const cubeCamera = new THREE.CubeCamera(0.1, 1000, cubeRenderTarget);
+        scene.add(cubeCamera);
+        
+        // 🛣️ Road CubeCamera!
+        const roadCubeRenderTarget = new THREE.WebGLCubeRenderTarget(isMobile ? 768 : 1024, {  // 🎯 512→768!
+            format: THREE.RGBFormat,
+            generateMipmaps: false,
+            minFilter: THREE.LinearFilter,
+            magFilter: THREE.LinearFilter,
+            encoding: THREE.sRGBEncoding
+        });
+        const roadCubeCamera = new THREE.CubeCamera(0.1, 5000, roadCubeRenderTarget);
+        roadCubeCamera.position.set(0, 5, 0);
+        scene.add(roadCubeCamera);
+        
+        // 🌌 PROFESYONEL SKYBOX ENVIRONMENT SYSTEM!
+        const pmremGenerator = new THREE.PMREMGenerator(renderer);
+        pmremGenerator.compileEquirectangularShader();
+        let currentEnvironmentMap = null;
 
-            const { Tubes1Cursor } = module;
+        // ============ YENİ: AKIŞKAN SKYBOX DEĞİŞKENLERİ ============
+        let universeTextures = [];
+        let pourTextures = [];
+        let currentUniverseIndex = 0;
+        let nextUniverseIndex = 1;
+        let currentPourIndex = 0;
+        let fluidSkybox = null;
+        let fluidMaterial = null;
+        let fluidTime = 0;
+        let isTransitioning = false;
+        let skyboxTransition = 1.0;
+        let transitionStartTime = 0;
+        let lastSkyboxChange = 0;
+        let lastPourTextureChange = 0;
+        let cycleStartTime = 0;
+        
+        // 🎯 OPTİMİZE DÖNGÜ - 50 SANİYE (24s IN, 1s FULL, 25s OUT)
+        const CYCLE_DURATION = 50000;           // Toplam döngü 50 saniye
+        const PURE_SPACE_DURATION = 0;          // Pure space YOK - hemen pour!
+        const POUR_FADE_IN_START = 0;           // 0s'de pour HEMEN başlıyor! ⚡
+        const POUR_FADE_IN_DURATION = 24000;    // 0-24s: Pour uzun fade in
+        const POUR_FULL_DURATION = 1000;        // 24-25s: Pour TAM görünür (1 saniye)
+        const POUR_FADE_OUT_START = 25000;      // 25s'de pour geri çekiliyor
+        const POUR_FADE_OUT_DURATION = 25000;   // 25-50s: Pour out + space blend (25 saniye!)
+        const NEW_SPACE_PURE_START = 50000;     // 50s: Döngü biter, yeni başlar!
+        
+        let fluidIntensity = 1.25;
+        let waveAmplitude = 0.75;
+        let flowSpeed = 0.0125;
+        let pourEffectIntensity = 0.0;
+        let waveEffectIntensity = 0.0;
 
-            const canvasElement = document.getElementById('canvas');
-            console.log('Canvas element:', canvasElement);
+        const UNIVERSE_TEXTURE_URLS = [
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/1myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/2myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/3myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/4myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/5myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/6myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/7myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/8myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/9myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/10myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/11myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/12myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/13myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/14myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/15myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/16myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/17myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/18myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/19myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/20myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/21myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/22myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/23myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/24myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/25myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/26myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/27myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/28myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/29myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/30myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/31myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/32myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/33myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/34myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/35myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/36myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/37myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/38myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/39myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/40myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/41myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/42myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/43myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/44myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/45myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/46myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/47myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/48myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/49myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/50myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/51myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/52myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/53myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/54myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/55myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/56myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/57myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/58myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/59myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/60myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/61myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/62myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/63myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/64myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/65myspace.PNG",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthink/main/assest/66myspace.PNG"
+        ];
 
-            const app = Tubes1Cursor(canvasElement, {
-              tubes: {
-                colors: ["#f967fb", "#53bc28", "#6958d5"],
-                lights: {
-                  intensity: 200,
-                  colors: ["#83f36e", "#fe8a2e", "#ff008a", "#60aed5"]
+        const POUR_TEXTURE_URLS = [
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthinktexture/main/assest/1myspacetexture.png",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthinktexture/main/assest/2myspacetexture.png",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthinktexture/main/assest/3myspacetexture.png",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthinktexture/main/assest/4myspacetexture.png",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthinktexture/main/assest/5myspacetexture.png",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthinktexture/main/assest/6myspacetexture.png",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthinktexture/main/assest/7myspacetexture.png",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthinktexture/main/assest/8myspacetexture.png",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthinktexture/main/assest/9myspacetexture.png",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthinktexture/main/assest/10myspacetexture.png",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthinktexture/main/assest/11myspacetexture.png",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthinktexture/main/assest/12myspacetexture.png",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthinktexture/main/assest/13myspacetexture.png",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthinktexture/main/assest/14myspacetexture.png",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthinktexture/main/assest/15myspacetexture.png",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthinktexture/main/assest/16myspacetexture.png",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthinktexture/main/assest/17myspacetexture.png",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthinktexture/main/assest/18myspacetexture.png",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthinktexture/main/assest/19myspacetexture.png",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthinktexture/main/assest/20myspacetexture.png",
+            "https://raw.githubusercontent.com/busrasuhaydar/newspaceoverthinktexture/main/assest/21myspacetexture.png"
+        ];
+
+        // ============ YENİ: SHADER KODLARI ============
+        const fluidVertexShader = `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `;
+
+        const fluidFragmentShader = `
+            precision highp float;
+            
+            varying vec2 vUv;
+            uniform sampler2D uTexture;
+            uniform sampler2D uNextTexture;
+            uniform sampler2D uPourTexture;
+            uniform float uTime;
+            uniform float uFlowSpeed;
+            uniform float uWaveAmplitude;
+            uniform float uFluidIntensity;
+            uniform vec2 uResolution;
+            uniform float uTransition;
+            uniform bool uIsTransitioning;
+            uniform float uMirrorMode;
+            uniform float uColorTemp;
+            uniform float uPourEffectIntensity;
+            
+            float random(vec2 st) {
+                return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+            }
+            
+            float noise(vec2 st) {
+                vec2 i = floor(st);
+                vec2 f = fract(st);
+                float a = random(i);
+                float b = random(i + vec2(1.0, 0.0));
+                float c = random(i + vec2(0.0, 1.0));
+                float d = random(i + vec2(1.0, 1.0));
+                vec2 u = f * f * (3.0 - 2.0 * f);
+                return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+            }
+            
+            float fbm(vec2 st, int octaves) {
+                float value = 0.0;
+                float amplitude = 0.6;
+                for (int i = 0; i < 8; i++) {
+                    if (i >= octaves) break;
+                    value += amplitude * noise(st);
+                    st *= 2.2;
+                    amplitude *= 0.55;
                 }
-              }
+                return value;
+            }
+            
+            vec2 applyMirror(vec2 uv, float mode) {
+                if (mode < 1.0) {
+                    return uv;
+                } else if (mode < 2.0) {
+                    return vec2(1.0 - uv.x, uv.y);
+                } else if (mode < 3.0) {
+                    return vec2(uv.x, 1.0 - uv.y);
+                } else {
+                    return vec2(1.0 - uv.x, 1.0 - uv.y);
+                }
+            }
+            
+            vec3 applyColorTemp(vec3 color, float temp) {
+                if (temp > 1.0) {
+                    float warmth = temp - 1.0;
+                    color.r += warmth * 0.3;
+                    color.g += warmth * 0.15;
+                } else {
+                    float coolness = 1.0 - temp;
+                    color.b += coolness * 0.3;
+                    color.g += coolness * 0.1;
+                }
+                return clamp(color, 0.0, 1.0);
+            }
+            
+            void main() {
+                vec2 st = vUv;
+                
+                // 🎯 SEAM SMOOTHER: UV kenarlarında yumuşak geçiş!
+                float seamBlend = 0.02;  // Kenar yumuşatma miktarı
+                float edgeDistX = min(st.x, 1.0 - st.x);
+                float edgeDistY = min(st.y, 1.0 - st.y);
+                float edgeFactor = smoothstep(0.0, seamBlend, min(edgeDistX, edgeDistY));
+                
+                // UV DÜZELTME: 1.82:1 -> 2:1 oranına ayarlama
+                st.y = st.y * 0.91 + 0.045;
+                
+                float time = uTime * uFlowSpeed;
+                
+                vec2 mirroredSt = applyMirror(st, uMirrorMode);
+                
+                vec4 pourSample = texture2D(uPourTexture, st + time * 0.05);
+                vec4 pourSample2 = texture2D(uPourTexture, st * 1.3 - time * 0.03);
+                float displacement = (pourSample.r + pourSample.g + pourSample.b) / 3.0;
+                float displacement2 = (pourSample2.r + pourSample2.g + pourSample2.b) / 3.0;
+                float combinedDisplacement = mix(displacement, displacement2, 0.5);
+                
+                vec2 flow1 = vec2(sin(st.x * 3.0 + time * 0.8), cos(st.y * 3.0 + time * 0.8)) * 0.35;
+                vec2 flow2 = vec2(cos(st.x * 6.0 - time * 0.6), sin(st.y * 6.0 - time * 0.6)) * 0.25;
+                vec2 flow3 = vec2(sin(st.x * 1.5 + time * 1.2), cos(st.y * 1.5 - time * 1.0)) * 0.2;
+                
+                // Pour efekt intensity ile çarp
+                vec2 totalFlow = (flow1 + flow2 + flow3) * combinedDisplacement * uFluidIntensity * 0.8 * uPourEffectIntensity;
+                
+                float wave1 = sin(st.x * 8.0 + time * 2.5) * uWaveAmplitude * 0.08;  // 0.025 → 0.08 (3x!)
+                float wave2 = cos(st.y * 7.0 - time * 2.0) * uWaveAmplitude * 0.08;  // 0.025 → 0.08 (3x!)
+                float wave3 = sin(st.x * 4.0 + st.y * 4.0 + time * 1.8) * uWaveAmplitude * 0.05;  // 0.015 → 0.05 (3x!)
+                
+                // Wave'ler POUR'dan bağımsız - her zaman aktif!
+                vec2 permanentWave = vec2(wave1 + wave3, wave2 + wave3);
+                
+                totalFlow += vec2(wave1 + wave3, wave2 + wave3) * uPourEffectIntensity;
+                
+                float turbulence1 = fbm(st * 2.0 + time * 0.3, 4);
+                float turbulence2 = fbm(st * 1.5 - time * 0.25, 3);
+                totalFlow += vec2(turbulence1, turbulence2) * 0.03 * uFluidIntensity * uPourEffectIntensity;
+                
+                // 🎯 RADIAL DISPLACEMENT MASK - Kenar dikişlerini gizler!
+                vec2 center = vec2(0.5, 0.5);
+                float distFromCenter = distance(st, center);
+                float radialFade = 1.0 - smoothstep(0.2, 0.65, distFromCenter);  // 🎯 Daha güçlü fade!
+                
+                // totalFlow'a radial mask uygula
+                totalFlow *= radialFade;
+                
+                // ✨ PURE SPACE SUBTLE FLOW - Her zaman aktif!
+                vec2 aliveFlow = 0.01 * vec2(
+                    sin(time * 0.05 + st.y * 3.0),
+                    cos(time * 0.05 + st.x * 2.0)
+                );
+                
+                vec2 distortedUV = mirroredSt + totalFlow + aliveFlow + permanentWave;
+                vec4 originalColor = texture2D(uTexture, distortedUV);
+                
+                if (uIsTransitioning) {
+                    vec2 nextDistortedUV = applyMirror(st, uMirrorMode) + totalFlow + aliveFlow + permanentWave;
+                    vec4 nextColor = texture2D(uNextTexture, nextDistortedUV);
+                    
+                    float pourMask1 = texture2D(uPourTexture, st + time * 0.08).r;
+                    float pourMask2 = texture2D(uPourTexture, st * 1.4 - time * 0.06).g;
+                    float pourMask3 = texture2D(uPourTexture, st * 0.8 + time * 0.04).b;
+                    
+                    float yGradient = smoothstep(0.0, 0.9, 1.0 - st.y);
+                    float xInfluence = sin(st.x * 3.14159) * 0.3;
+                    float drippingMask = mix(mix(pourMask1, pourMask2, 0.5), pourMask3, 0.3);
+                    
+                    float finalDripMask = smoothstep(0.15, 0.85, drippingMask + yGradient * 0.8 + xInfluence);
+                    
+                    float transitionThreshold = uTransition * 2.2 - 0.6;
+                    float revealMask = smoothstep(transitionThreshold - 0.5, transitionThreshold + 0.3, finalDripMask);
+                    
+                    originalColor = mix(originalColor, nextColor, revealMask);
+                }
+                
+                vec3 finalColor = applyColorTemp(originalColor.rgb, uColorTemp);
+                
+                // 🎯 Kenar yumuşatma faktörünü uygula
+                finalColor = mix(vec3(0.0), finalColor, edgeFactor);
+                
+                gl_FragColor = vec4(finalColor, originalColor.a);
+            }
+        `;
+        
+        // ============ YENİ: TEKSTÜR YÜKLEME FONKSİYONLARI ============
+        const textureLoader = new THREE.TextureLoader();
+        let loadedUniverseCount = 0;
+        let loadedPourCount = 0;
+        
+        // 🎲 SHUFFLE SİSTEMİ - Tüm texture'lar random ama tekrar yok!
+        let universeShuffleQueue = [];
+        let pourShuffleQueue = [];
+        let usedUniverseIndices = [];
+        let usedPourIndices = [];
+        let texturesReady = false;
+
+        // 📱 MOBİL HAFIZA YÖNETİMİ - Sadece aktif texture'ları yükle!
+        let activeTextureIndices = new Set();
+        const MAX_LOADED_TEXTURES = isMobile ? 10 : 50;  // 📱 Mobilde MAX 10 texture!
+        
+        function loadFluidTextures() {
+            
+            // ============================================
+            // 1️⃣ İLK 2 UNIVERSE + 2 POUR → RANDOM SEÇ VE ANINDA BAŞLA!
+            // ============================================
+            const quickStart = 2;  // Sadece 2 texture ile başla - DAHA HIZLI!
+            
+            // 🎲 RANDOM 2 universe texture seç!
+            const randomUniverseIndices = [];
+            while (randomUniverseIndices.length < quickStart) {
+                const randomIndex = Math.floor(Math.random() * UNIVERSE_TEXTURE_URLS.length);
+                if (!randomUniverseIndices.includes(randomIndex)) {
+                    randomUniverseIndices.push(randomIndex);
+                }
+            }
+            
+            randomUniverseIndices.forEach((index, i) => {
+                textureLoader.load(UNIVERSE_TEXTURE_URLS[index], (texture) => {
+                    texture.encoding = THREE.sRGBEncoding;
+                    texture.wrapS = THREE.RepeatWrapping;  // 🎯 MirroredRepeat yerine RepeatWrapping!
+                    texture.wrapT = THREE.ClampToEdgeWrapping;  // 🎯 Dikey kenarlarda keskinlik önleniyor!
+                    texture.minFilter = THREE.LinearFilter;
+                    texture.magFilter = THREE.LinearFilter;
+                    texture.anisotropy = isMobile ? 1 : renderer.capabilities.getMaxAnisotropy();
+                    texture.generateMipmaps = false;
+                    
+                    universeTextures[index] = texture;
+                    activeTextureIndices.add('u' + index);  // 📱 Track aktif texture!
+                    loadedUniverseCount++;
+                    
+                    if (loadedUniverseCount >= quickStart && loadedPourCount >= 2 && !texturesReady) {
+                        texturesReady = true;
+                        createFluidSkybox();
+                        
+                        // 📱 MOBİL: Geri kalanları yavaşça yükle!
+                        if (!isMobile) {
+                            loadRemainingTextures();
+                        } else {
+                            loadTexturesLazy();  // Mobilde LAZY loading!
+                        }
+                    }
+                });
             });
-
-            console.log('App initialized:', app);
-
-            document.body.addEventListener('click', () => {
-              const colors = randomColors(3);
-              const lightsColors = randomColors(4);
-              console.log('New colors:', colors, lightsColors);
-              app.tubes.setColors(colors);
-              app.tubes.setLightsColors(lightsColors);
+            
+            // 🎲 RANDOM 2 pour texture seç!
+            const randomPourIndices = [];
+            while (randomPourIndices.length < 2) {
+                const randomIndex = Math.floor(Math.random() * POUR_TEXTURE_URLS.length);
+                if (!randomPourIndices.includes(randomIndex)) {
+                    randomPourIndices.push(randomIndex);
+                }
+            }
+            
+            randomPourIndices.forEach((index, i) => {
+                textureLoader.load(POUR_TEXTURE_URLS[index], (texture) => {
+                    texture.wrapS = THREE.MirroredRepeatWrapping;
+                    texture.wrapT = THREE.MirroredRepeatWrapping;
+                    texture.minFilter = THREE.LinearFilter;
+                    texture.magFilter = THREE.LinearFilter;
+                    texture.anisotropy = isMobile ? 1 : renderer.capabilities.getMaxAnisotropy();
+                    texture.generateMipmaps = false;
+                    
+                    pourTextures[index] = texture;
+                    activeTextureIndices.add('p' + index);  // 📱 Track aktif texture!
+                    loadedPourCount++;
+                    
+                    if (loadedUniverseCount >= quickStart && loadedPourCount >= 2 && !texturesReady) {
+                        texturesReady = true;
+                        createFluidSkybox();
+                        if (!isMobile) {
+                            loadRemainingTextures();
+                        } else {
+                            loadTexturesLazy();
+                        }
+                    }
+                });
             });
+        }
+        
+        // 📱 LAZY LOADING - Mobilde texture'ları TEK TEK yükle + AKILLI DÖNGÜ!
+        let textureLoadIndex = 0;
+        let texturesInQueue = [];
+        
+        function loadTexturesLazy() {
+            // İlk başlangıç - 10 texture queue'ya ekle
+            for (let i = 0; i < 10; i++) {
+                const index = (currentUniverseIndex + textureLoadIndex + 3 + i) % UNIVERSE_TEXTURE_URLS.length;
+                if (!texturesInQueue.includes(index)) {
+                    texturesInQueue.push(index);
+                }
+            }
+            loadNextTexture();
+        }
+        
+        function loadNextTexture() {
+            if (texturesInQueue.length === 0) return;
+            if (activeTextureIndices.size >= MAX_LOADED_TEXTURES) {
+                setTimeout(loadNextTexture, 1000);
+                return;
+            }
+            
+            const index = texturesInQueue.shift();
+            
+            if (!universeTextures[index]) {
+                textureLoader.load(UNIVERSE_TEXTURE_URLS[index], (texture) => {
+                    texture.encoding = THREE.sRGBEncoding;
+                    texture.wrapS = THREE.MirroredRepeatWrapping;
+                    texture.wrapT = THREE.MirroredRepeatWrapping;
+                    texture.minFilter = THREE.LinearFilter;
+                    texture.magFilter = THREE.LinearFilter;
+                    texture.anisotropy = 1;
+                    texture.generateMipmaps = false;
+                    
+                    universeTextures[index] = texture;
+                    activeTextureIndices.add('u' + index);
+                    textureLoadIndex++;
+                    
+                    // 🎯 8. TEXTURE'A GELDİĞİNDE YENİ 10 TEXTURE EKLE!
+                    if (textureLoadIndex % 8 === 0) {
+                        console.log('🎨 Loading next batch of textures...');
+                        for (let i = 0; i < 10; i++) {
+                            const nextIndex = (currentUniverseIndex + textureLoadIndex + i) % UNIVERSE_TEXTURE_URLS.length;
+                            if (!texturesInQueue.includes(nextIndex) && !universeTextures[nextIndex]) {
+                                texturesInQueue.push(nextIndex);
+                            }
+                        }
+                    }
+                    
+                    setTimeout(loadNextTexture, 1500);  // 1.5 saniye bekle!
+                }, undefined, (error) => {
+                    console.log('Texture load error:', error);
+                    setTimeout(loadNextTexture, 1000);
+                });
+            } else {
+                setTimeout(loadNextTexture, 100);
+            }
+        }
+        
+        function loadRemainingTextures() {
+            
+            // Universe texture'ların geri kalanı
+            for (let i = 3; i < UNIVERSE_TEXTURE_URLS.length; i++) {
+                textureLoader.load(UNIVERSE_TEXTURE_URLS[i], (texture) => {
+                    texture.encoding = THREE.sRGBEncoding;
+                    texture.wrapS = THREE.MirroredRepeatWrapping;
+                    texture.wrapT = THREE.MirroredRepeatWrapping;
+                    texture.minFilter = THREE.LinearFilter;
+                    texture.magFilter = THREE.LinearFilter;
+                    texture.anisotropy = isMobile ? 1 : renderer.capabilities.getMaxAnisotropy();  // 📱
+                    texture.generateMipmaps = false;
+                    
+                    universeTextures[i] = texture;
+                    loadedUniverseCount++;
+                    
+                    if (loadedUniverseCount % 20 === 0) {
+                    }
+                });
+            }
+            
+            // Pour texture'ların geri kalanı
+            for (let i = 2; i < POUR_TEXTURE_URLS.length; i++) {
+                textureLoader.load(POUR_TEXTURE_URLS[i], (texture) => {
+                    texture.wrapS = THREE.MirroredRepeatWrapping;  // Aynalı tekrar - kesişim yok!
+                    texture.wrapT = THREE.MirroredRepeatWrapping;  // Aynalı tekrar - kesişim yok!
+                    texture.minFilter = THREE.LinearFilter;
+                    texture.magFilter = THREE.LinearFilter;
+                    texture.anisotropy = isMobile ? 1 : renderer.capabilities.getMaxAnisotropy();  // 📱
+                    texture.generateMipmaps = false;
+                    
+                    pourTextures[i] = texture;
+                    loadedPourCount++;
+                    
+                    if (loadedPourCount === POUR_TEXTURE_URLS.length) {
+                    }
+                });
+            }
+        }
 
-            function randomColors (count) {
-                return new Array(count)
-                    .fill(0)
-                    .map(() => "#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0'));
+        function checkFluidTexturesLoaded() {
+            if (loadedUniverseCount >= UNIVERSE_TEXTURE_URLS.length && 
+                loadedPourCount >= POUR_TEXTURE_URLS.length && 
+                !texturesReady) {
+                texturesReady = true;
+                createFluidSkybox();
+            }
+        }
+
+        // 🎲 SHUFFLE FONKSİYONLARI
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+        
+        function getRandomUniverseIndex() {
+            // Yüklenmiş texture'ları bul
+            const availableIndices = [];
+            for (let i = 0; i < universeTextures.length; i++) {
+                if (universeTextures[i]) {
+                    availableIndices.push(i);
+                }
+            }
+            
+            if (availableIndices.length === 0) return 0;
+            
+            // Queue boşsa veya ilk kez → Shuffle et!
+            if (universeShuffleQueue.length === 0) {
+                universeShuffleQueue = shuffleArray(availableIndices);
+            }
+            
+            // Queue'dan sıradaki texture'ı al
+            const nextIndex = universeShuffleQueue.shift();
+            
+            return nextIndex;
+        }
+        
+        function getRandomPourIndex() {
+            // Yüklenmiş pour texture'ları bul
+            const availableIndices = [];
+            for (let i = 0; i < pourTextures.length; i++) {
+                if (pourTextures[i]) {
+                    availableIndices.push(i);
+                }
+            }
+            
+            if (availableIndices.length === 0) return 0;
+            
+            // Queue boşsa → Shuffle et!
+            if (pourShuffleQueue.length === 0) {
+                pourShuffleQueue = shuffleArray(availableIndices);
+            }
+            
+            // Queue'dan sıradaki pour texture'ı al
+            const nextIndex = pourShuffleQueue.shift();
+            
+            return nextIndex;
+        }
+        
+
+        function createFluidSkybox() {
+            
+            currentUniverseIndex = getRandomUniverseIndex();
+            nextUniverseIndex = getRandomUniverseIndex();
+            while (nextUniverseIndex === currentUniverseIndex && universeTextures.length > 1) {
+                nextUniverseIndex = getRandomUniverseIndex();
             }
 
-            console.log('✅ Everything loaded successfully!');
-        } catch (error) {
-            console.error('❌ Error:', error);
-            document.body.innerHTML += `<div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 2px solid red; border-radius: 10px; max-width: 80%; z-index: 9999;">
-                <h2 style="color: red; margin: 0 0 10px 0;">Hata / Error</h2>
-                <p style="margin: 0; font-family: monospace; color: black;">${error.message}</p>
-                <p style="margin: 10px 0 0 0; font-size: 12px; color: #666;">
-                    Lütfen tarayıcı konsolunu kontrol edin veya HTTP server ile açın.<br>
-                    Please check browser console or open with HTTP server.
-                </p>
-            </div>`;
+            const skyboxGeometry = new THREE.SphereGeometry(3000, isMobile ? 64 : 128, isMobile ? 64 : 128);  // 🎯 Daha yüksek segment = yumuşak geçişler!
+            
+            fluidMaterial = new THREE.ShaderMaterial({
+                uniforms: {
+                    uTexture: { value: universeTextures[currentUniverseIndex] },
+                    uNextTexture: { value: universeTextures[nextUniverseIndex] },
+                    uPourTexture: { value: pourTextures[0] },
+                    uTime: { value: 0 },
+                    uFlowSpeed: { value: flowSpeed },
+                    uWaveAmplitude: { value: waveAmplitude },
+                    uFluidIntensity: { value: fluidIntensity },
+                    uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+                    uTransition: { value: 1.0 },
+                    uIsTransitioning: { value: false },
+                    uMirrorMode: { value: 0.0 },
+                    uColorTemp: { value: 1.0 },
+                    uPourEffectIntensity: { value: 0.0 }
+                },
+                vertexShader: fluidVertexShader,
+                fragmentShader: fluidFragmentShader,
+                side: THREE.BackSide
+            });
+
+            fluidSkybox = new THREE.Mesh(skyboxGeometry, fluidMaterial);
+            scene.add(fluidSkybox);
+            
+            // 🌌 PROFESYONEL ENVIRONMENT MAP OLUŞTUR!
+            updateEnvironmentMap();
+            
+            cycleStartTime = Date.now();
+            lastSkyboxChange = Date.now();
+            lastPourTextureChange = Date.now();
+            
+            // 📱 Skybox yüklendi!
+            assetsLoaded.skybox = true;
+            checkAllLoaded();
         }
+        
+        // 🌌 Environment Map güncelleme fonksiyonu
+        function updateEnvironmentMap() {
+            // ❌ KALDIRILDI! scene.environment araba rengini değiştiriyordu!
+            // Artık sadece yol roadCubeCamera ile envMap kullanıyor!
+        }
+
+        function updateFluidSkybox() {
+            if (!fluidMaterial) return;
+            
+            const currentTime = Date.now();
+            const cycleTime = (currentTime - cycleStartTime) % CYCLE_DURATION;
+            
+            // ═══════════════════════════════════════════════════════
+            // MÜKEMMEL DÖNGÜ SİSTEMİ
+            // ═══════════════════════════════════════════════════════
+            
+            // 🎲 Pour texture seçimi - Shuffle queue'dan!
+            if (cycleTime < 100) {
+                currentPourIndex = getRandomPourIndex();
+                if (pourTextures[currentPourIndex]) {
+                    fluidMaterial.uniforms.uPourTexture.value = pourTextures[currentPourIndex];
+                }
+            }
+            
+            if (cycleTime < PURE_SPACE_DURATION) {
+                // Bu if artık çalışmaz çünkü PURE_SPACE_DURATION = 0
+                // Ama kod uyumluluğu için bırakıyorum
+                pourEffectIntensity = 0.0;
+                waveEffectIntensity = 0.0;
+                fluidMaterial.uniforms.uWaveAmplitude.value = 0.0;
+                fluidMaterial.uniforms.uFluidIntensity.value = 0.0;
+                
+            } else if (cycleTime < POUR_FADE_IN_START + POUR_FADE_IN_DURATION) {
+                // ▶ 10-20s: POUR + WAVE FADE IN
+                const fadeProgress = (cycleTime - POUR_FADE_IN_START) / POUR_FADE_IN_DURATION;
+                const smoothProgress = 0.5 - 0.5 * Math.cos(fadeProgress * Math.PI); // Sine easing
+                
+                pourEffectIntensity = smoothProgress;
+                waveEffectIntensity = smoothProgress;
+                
+                fluidMaterial.uniforms.uWaveAmplitude.value = waveAmplitude * smoothProgress;
+                fluidMaterial.uniforms.uFluidIntensity.value = fluidIntensity * smoothProgress;
+                
+            } else if (cycleTime < POUR_FADE_IN_START + POUR_FADE_IN_DURATION + POUR_FULL_DURATION) {
+                // ▶ 20-25s: POUR + WAVE TAM GÖRÜNÜR
+                pourEffectIntensity = 1.0;
+                waveEffectIntensity = 1.0;
+                
+                fluidMaterial.uniforms.uWaveAmplitude.value = waveAmplitude;
+                fluidMaterial.uniforms.uFluidIntensity.value = fluidIntensity;
+                
+            } else if (cycleTime < POUR_FADE_OUT_START + POUR_FADE_OUT_DURATION) {
+                // ▶ 25-35s: POUR FADE OUT + SPACE BLEND (PARALEL)
+                const fadeProgress = (cycleTime - POUR_FADE_OUT_START) / POUR_FADE_OUT_DURATION;
+                const smoothProgress = 0.5 - 0.5 * Math.cos(fadeProgress * Math.PI); // Sine easing
+                
+                // Pour ve wave geri çekiliyor (AYNI pour texture)
+                pourEffectIntensity = 1.0 - smoothProgress;
+                waveEffectIntensity = 1.0 - smoothProgress;
+                
+                fluidMaterial.uniforms.uWaveAmplitude.value = waveAmplitude * (1.0 - smoothProgress);
+                fluidMaterial.uniforms.uFluidIntensity.value = fluidIntensity * (1.0 - smoothProgress);
+                
+                // Space blend başlatma (ilk kez - sadece bir kez çalışsın)
+                if (fadeProgress < 0.01 && !fluidMaterial.uniforms.uIsTransitioning.value) {
+                    // Sadece yüklenmiş texture'ları kullan!
+                    do {
+                        nextUniverseIndex = getRandomUniverseIndex();
+                    } while (nextUniverseIndex === currentUniverseIndex && loadedUniverseCount > 1);
+                    
+                    // Texture yüklenmişse kullan
+                    if (universeTextures[nextUniverseIndex]) {
+                        fluidMaterial.uniforms.uNextTexture.value = universeTextures[nextUniverseIndex];
+                        fluidMaterial.uniforms.uIsTransitioning.value = true;
+                    }
+                }
+                
+                // Space blend progress (0 → 1: eski space'den yeni space'e)
+                // Shader'da transition mantığına göre ayarla
+                fluidMaterial.uniforms.uTransition.value = 1.0 - smoothProgress;
+                
+                // Transition tamamlandı mı? Hemen yeni döngü!
+                if (smoothProgress >= 0.99) {
+                    currentUniverseIndex = nextUniverseIndex;
+                    fluidMaterial.uniforms.uTexture.value = universeTextures[currentUniverseIndex];
+                    fluidMaterial.uniforms.uIsTransitioning.value = false;
+                    
+                    // 🌌 ENVIRONMENT MAP GÜNCELLE!
+                    updateEnvironmentMap();
+                }
+            }
+            
+            // Döngü sıfırlama (40. saniyede - yeni space = yeni pour!)
+            if (cycleTime >= CYCLE_DURATION - 100 && cycleTime < CYCLE_DURATION) {
+                cycleStartTime = currentTime;
+            }
+            
+            // Wave animasyonu (sadece aktif olduğunda)
+            if (waveEffectIntensity > 0) {
+                fluidTime += 0.016 * 0.25;
+                fluidMaterial.uniforms.uTime.value = fluidTime;
+                fluidMaterial.uniforms.uFlowSpeed.value = flowSpeed;
+            }
+            
+            fluidMaterial.uniforms.uPourEffectIntensity.value = pourEffectIntensity;
+        }
+        // ============ YENİ KISIM BİTTİ - AŞAĞISI ORJİNAL ============
+
+        // ✨ KÜÇÜK YILDIZLAR (size: 2) - Büyük kare yıldızlar yok!
+        const starGeometry = new THREE.BufferGeometry();
+        const starCount = isMobile ? 3500 : 7777;  // 📱 Mobilde orta seviye yıldız!
+        const starPositions = new Float32Array(starCount * 3);
+        const starColors = new Float32Array(starCount * 3);
+        
+        for (let i = 0; i < starCount * 3; i += 3) {
+            starPositions[i] = (Math.random() - 0.5) * 2000;
+            starPositions[i + 1] = (Math.random() - 0.5) * 2000;
+            starPositions[i + 2] = (Math.random() - 0.5) * 2000;
+            
+            const brightness = Math.random();
+            starColors[i] = 0.7 + brightness * 0.3;
+            starColors[i + 1] = 0.7 + brightness * 0.3;
+            starColors[i + 2] = 0.9 + brightness * 0.1;
+        }
+        
+        starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+        starGeometry.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
+        
+        // ✨ PARLAK NET YUVARLAK yıldızlar!
+        const starMaterial = new THREE.PointsMaterial({ 
+            size: isMobile ? 2.5 : 3,  // 📱 Mobilde biraz küçük!
+            vertexColors: true,
+            transparent: true,
+            opacity: 1.0,
+            sizeAttenuation: true,
+            map: createCircleTexture(),  // ✅ Texture GERİ!
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+        const stars = new THREE.Points(starGeometry, starMaterial);
+        scene.add(stars);
+        
+        // 🎨 NET YUVARLAK yıldız texture - PARLAK!
+        function createCircleTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            
+            const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+            gradient.addColorStop(0, 'rgba(255,255,255,1)');
+            gradient.addColorStop(0.2, 'rgba(255,255,255,1)');
+            gradient.addColorStop(0.5, 'rgba(255,255,255,0.8)'); // Hala parlak
+            gradient.addColorStop(0.8, 'rgba(255,255,255,0.3)'); // Yumuşak kenar
+            gradient.addColorStop(1, 'rgba(255,255,255,0)');    // Transparant
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 64, 64);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.needsUpdate = true;
+            return texture;
+        }
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.714);
+        scene.add(ambientLight);
+
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444466, 0.816);
+        hemiLight.position.set(0, 300, 0);
+        scene.add(hemiLight);
+
+        const mainLight = new THREE.DirectionalLight(0xffffff, 3.0);
+        mainLight.position.set(200, 250, 200);
+        mainLight.castShadow = true;
+        mainLight.shadow.mapSize.width = isMobile ? 2048 : 4096;
+        mainLight.shadow.mapSize.height = isMobile ? 2048 : 4096;
+        mainLight.shadow.camera.far = 1000;
+        mainLight.shadow.camera.left = -250;
+        mainLight.shadow.camera.right = 250;
+        mainLight.shadow.camera.top = 250;
+        mainLight.shadow.camera.bottom = -250;
+        mainLight.shadow.bias = -0.0001;  // 🎯 Shadow bias düzeltildi - artifact yok!
+        mainLight.shadow.normalBias = 0.02;  // 🎯 Normal bias eklendi!
+        scene.add(mainLight);
+
+        // 📱 MOBİL: 2 ışık yeterli! (4 yerine)
+        if (!isMobile) {
+            const roadLight1 = new THREE.DirectionalLight(0xffffff, 1.5);
+            roadLight1.position.set(-200, 200, 0);
+            scene.add(roadLight1);
+
+            const roadLight2 = new THREE.DirectionalLight(0xffffff, 1.5);
+            roadLight2.position.set(200, 200, 0);
+            scene.add(roadLight2);
+        }
+
+        const roadLight3 = new THREE.DirectionalLight(0xffffff, 1.2);
+        roadLight3.position.set(0, 200, 200);
+        scene.add(roadLight3);
+
+        const roadLight4 = new THREE.DirectionalLight(0xffffff, 1.2);
+        roadLight4.position.set(0, 200, -200);
+        scene.add(roadLight4);
+
+        const fillLight1 = new THREE.DirectionalLight(0xaaccff, 0.408);
+        fillLight1.position.set(-200, 150, -200);
+        scene.add(fillLight1);
+
+        const fillLight2 = new THREE.DirectionalLight(0xffccaa, 0.306);
+        fillLight2.position.set(200, 150, -200);
+        scene.add(fillLight2);
+
+        const spotLight = new THREE.SpotLight(0xffffff, 1.224);
+        spotLight.angle = Math.PI / 5;
+        spotLight.penumbra = 0.3;
+        spotLight.distance = 120;
+        spotLight.castShadow = true;
+        scene.add(spotLight);
+
+        let car = null;
+        const keys = {};
+        let carSpeed = 0;
+        let maxSpeed = 0.4;
+        let acceleration = 0.008;
+        let deceleration = 0.006;
+        let turnSpeed = 0;
+        let maxTurnSpeed = 0.02;
+        
+        let cameraMode = 0;
+        
+        const DEFAULT_CAMERA_SETTINGS = {
+            mode0: {
+                yaw: 0,
+                pitch: -0.1,
+                distance: 19.6,
+                fov: 75
+            },
+            mode1: {
+                pitch: 0,
+                yaw: 0,
+                distance: 0,
+                fov: 75
+            },
+            mode2: {
+                theta: 0,
+                phi: Math.PI / 6,
+                radius: 150,
+                fov: 75
+            }
+        };
+        
+        let cameraYaw = DEFAULT_CAMERA_SETTINGS.mode0.yaw;
+        let cameraPitch = DEFAULT_CAMERA_SETTINGS.mode0.pitch;
+        let cameraDistance = DEFAULT_CAMERA_SETTINGS.mode0.distance;
+        let cameraRadius = DEFAULT_CAMERA_SETTINGS.mode2.radius;
+        let cameraTheta = DEFAULT_CAMERA_SETTINGS.mode2.theta;
+        let cameraPhi = DEFAULT_CAMERA_SETTINGS.mode2.phi;
+        
+        let targetCameraPosition = new THREE.Vector3();
+        let currentCameraPosition = new THREE.Vector3();
+        let targetLookAt = new THREE.Vector3();
+        let currentLookAt = new THREE.Vector3();
+        let isMouseDown = false;
+        let mouseX = 0, mouseY = 0;
+        
+        let smoothCarPosition = new THREE.Vector3();
+        let smoothCarRotation = 0;
+        let smoothCarHeight = 0;
+        let targetCarHeight = 0;
+        let heightVelocity = 0;
+        let smoothCarPitch = 0;
+        let smoothCarRoll = 0;
+        let previousRoadHeight = 0;
+        let roadHeightVelocity = 0;
+        
+        let lastCheckpointT = 0;
+        let lastCheckpointPoint = null;
+        let checkpointSearchCooldown = 0;
+        
+        let roadPullAccumulator = new THREE.Vector2(0, 0);
+        let lastRoadDistance = 0;
+        
+        let heightBuffer = [];
+        const heightBufferSize = 8;
+        
+        let smoothedTargetHeight = 0;
+        let ultraSmoothHeight = 0;
+
+        let trackMesh = null;
+        let pathCurve = null;
+        let checkpoints = [];
+        const roadScale = 4.0;
+        
+        let mirrorMixers = [];
+        let rotatingMirrors = [];
+        let mirrorMeshes = [];
+        let mirrorsLoaded = 0;
+        let mirrorsCreated = 0;
+        const TOTAL_MIRRORS = isMobile ? 40 : 58;  // 📱 Mobilde 40 ayna - hala çok güzel!
+
+        const roadData = {
+            "version": "10.0",
+            "metadata": {
+                "totalPoints": 30,
+                "checkpointCount": 30,
+                "closed": true,
+                "precision": "2mm",
+                "hasCheckpointSizes": true
+            },
+            "checkpoints": [
+                {"id": 1, "position": {"x": -25.646, "y": 0.163, "z": 4.058}, "width": 3},
+                {"id": 2, "position": {"x": -26.155, "y": 0.181, "z": -1.127}, "width": 3},
+                {"id": 3, "position": {"x": -24.894, "y": 0.148, "z": -6.112}, "width": 3},
+                {"id": 4, "position": {"x": -21.683, "y": 0.149, "z": -9.789}, "width": 3},
+                {"id": 5, "position": {"x": -16.726, "y": 0.157, "z": -11.967}, "width": 3},
+                {"id": 6, "position": {"x": -11.452, "y": 0.17, "z": -11.642}, "width": 3},
+                {"id": 7, "position": {"x": -6.245, "y": 0.169, "z": -9.035}, "width": 3},
+                {"id": 8, "position": {"x": -2.991, "y": 0.174, "z": -4.223}, "width": 3},
+                {"id": 9, "position": {"x": 0.854, "y": 0.176, "z": 0.94}, "width": 3},
+                {"id": 10, "position": {"x": 3.971, "y": 0.17, "z": 6.291}, "width": 3},
+                {"id": 11, "position": {"x": 8.197, "y": 0.171, "z": 10.269}, "width": 3},
+                {"id": 12, "position": {"x": 13.561, "y": 0.178, "z": 11.828}, "width": 3},
+                {"id": 13, "position": {"x": 19.141, "y": 0.169, "z": 10.994}, "width": 3},
+                {"id": 14, "position": {"x": 23.726, "y": 0.154, "z": 7.705}, "width": 3},
+                {"id": 15, "position": {"x": 26.162, "y": 0.158, "z": 2.519}, "width": 3},
+                {"id": 16, "position": {"x": 25.602, "y": 0.203, "z": -3.421}, "width": 3},
+                {"id": 17, "position": {"x": 23.067, "y": 0.14, "z": -8.491}, "width": 3},
+                {"id": 18, "position": {"x": 17.356, "y": 0.57, "z": -11.475}, "width": 3},
+                {"id": 19, "position": {"x": 12.709, "y": 1.332, "z": -12.195}, "width": 3},
+                {"id": 20, "position": {"x": 9.282, "y": 2.084, "z": -11.272}, "width": 3},
+                {"id": 21, "position": {"x": 5.431, "y": 3.035, "z": -8.736}, "width": 3},
+                {"id": 22, "position": {"x": 3.409, "y": 3.558, "z": -5.457}, "width": 3},
+                {"id": 23, "position": {"x": 1.394, "y": 3.785, "z": -1.957}, "width": 3},
+                {"id": 24, "position": {"x": -0.665, "y": 3.841, "z": 1.429}, "width": 3},
+                {"id": 25, "position": {"x": -3.825, "y": 3.595, "z": 5.443}, "width": 3},
+                {"id": 26, "position": {"x": -8.47, "y": 2.557, "z": 9.753}, "width": 3},
+                {"id": 27, "position": {"x": -14.626, "y": 1.111, "z": 12.027}, "width": 3},
+                {"id": 28, "position": {"x": -19.934, "y": 0.371, "z": 10.023}, "width": 3},
+                {"id": 29, "position": {"x": -23.961, "y": 0.136, "z": 7.489}, "width": 3},
+                {"id": 30, "position": {"x": -25.674, "y": 0.163, "z": 3.981}, "width": 3}
+            ]
+        };
+
+        function createCar() {
+            const carGroup = new THREE.Group();
+            
+            const carLoader = new THREE.GLTFLoader();
+            carLoader.load(
+                'https://busrasuhaydar.github.io/araba/araba.glb',
+                function(gltf) {
+                    const carModel = gltf.scene;
+                    
+                    carModel.traverse((child) => {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                        }
+                    });
+                    
+                    const box = new THREE.Box3().setFromObject(carModel);
+                    const size = box.getSize(new THREE.Vector3());
+                    
+                    const targetHeight = 2.5;
+                    const targetLength = 5;
+                    const scaleY = targetHeight / size.y;
+                    const scaleZ = targetLength / size.z;
+                    const finalScale = Math.max(scaleY, scaleZ);
+                    
+                    
+                    carModel.position.set(0, 0, 0);
+                    carModel.rotation.y = Math.PI;
+                    carModel.scale.set(finalScale, finalScale, finalScale);
+                    
+                    carGroup.add(carModel);
+                    
+                    // 📱 Araba yüklendi!
+                    assetsLoaded.car = true;
+                    checkAllLoaded();
+                },
+                function(xhr) {
+                },
+                function(error) {
+                    
+                    const carBody = new THREE.Mesh(
+                        new THREE.BoxGeometry(2.5, 1.2, 5),
+                        new THREE.MeshPhongMaterial({ 
+                            color: 0xFF1100,
+                            shininess: 180,
+                            specular: 0xaaaaaa,
+                            emissive: 0x440000,
+                            emissiveIntensity: 0.3
+                        })
+                    );
+                    carBody.position.y = 1;
+                    carBody.castShadow = true;
+                    carGroup.add(carBody);
+                    
+                    // 📱 Fallback araba da yüklendi sayılır!
+                    assetsLoaded.car = true;
+                    checkAllLoaded();
+                }
+            );
+
+            const headlightGeometry = new THREE.SphereGeometry(0.2, 16, 16);
+            const headlightMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xFFFFFF,
+                emissive: 0xFFFFFF,
+                emissiveIntensity: 1.5,
+                transparent: true,
+                opacity: 0
+            });
+            
+            [-0.9, 0.9].forEach(x => {
+                const light = new THREE.Mesh(headlightGeometry, headlightMaterial);
+                light.position.set(x, 0.9, 2.6);
+                carGroup.add(light);
+                
+                const carSpotLight = new THREE.SpotLight(0xFFFFFF, 2.5);
+                carSpotLight.angle = Math.PI / 4;
+                carSpotLight.penumbra = 0.4;
+                carSpotLight.distance = 100;
+                carSpotLight.decay = 2;
+                carSpotLight.position.set(x, 0.9, 2.6);
+                carSpotLight.target.position.set(x, -0.5, 20);
+                carGroup.add(carSpotLight);
+                carGroup.add(carSpotLight.target);
+            });
+
+            car = carGroup;
+            
+            if (checkpoints && checkpoints.length > 0) {
+                const startCheckpoint = checkpoints[0];
+                const startHeight = startCheckpoint.y + 0.25;  // 🎯 0.25 offset ile uyumlu!
+                
+                car.position.set(
+                    startCheckpoint.x - 3,  // 3 birim SOLA!
+                    startHeight,
+                    startCheckpoint.z - 10  // 5+5=10 birim GERİ!
+                );
+                smoothCarPosition.copy(car.position);
+                smoothCarHeight = startHeight;
+                smoothedTargetHeight = startHeight;
+                ultraSmoothHeight = startHeight;
+                previousRoadHeight = startCheckpoint.y;
+                
+                for (let i = 0; i < heightBufferSize; i++) {
+                    heightBuffer.push(startCheckpoint.y);
+                }
+            }
+            
+            scene.add(carGroup);
+        }
+
+        const loader = new THREE.GLTFLoader();
+        loader.load(
+            'https://busrasuhaydar.github.io/sonsuzyol/sonsuzracee.glb',
+            function(gltf) {
+                trackMesh = gltf.scene;
+                trackMesh.position.set(0, 0, 0);
+                trackMesh.scale.set(roadScale, roadScale, roadScale);
+                
+                trackMesh.traverse((child) => {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                        
+                        // 🏎️ ARABA mı YOL mu kontrol et!
+                        
+                        // Araba ve ayna HARİÇ her şey YOL!
+                        const isCar = child.name.toLowerCase().includes('car') || 
+                                     child.name.toLowerCase().includes('vehicle') ||
+                                     child.name.toLowerCase().includes('infinity');
+                        
+                        const isMirror = child.name.toLowerCase().includes('mirror') ||
+                                        child.name.toLowerCase().includes('ayna');
+                        
+                        const isRoad = !isCar && !isMirror;  // Araba ve ayna değilse YOL!
+                        
+                        
+                        if (child.material) {
+                            const materials = Array.isArray(child.material) ? child.material : [child.material];
+                            materials.forEach(mat => {
+                                
+                                if (isRoad) {
+                                    // 🛣️ YOL - ULTRA PÜRÜZSÜZ AYNA!
+                                    mat.metalness = 1.0;
+                                    mat.roughness = 0.01;         // 0.02 → 0.01 (Daha pürüzsüz!)
+                                    mat.ior = 2.5;
+                                    mat.reflectivity = 1.0;
+                                    
+                                    mat.clearcoat = 1.0;
+                                    mat.clearcoatRoughness = 0.005;  // 0.01 → 0.005 (Ekstra pürüzsüz!)
+                                    
+                                    // 🛣️ ULTRA NET YANSIMA!
+                                    mat.envMap = roadCubeRenderTarget.texture;
+                                    mat.envMapIntensity = 6.0;    // 8.0 → 6.0 (Daha balanced!)
+                                    
+                                    // Anisotropic filtering maksimum!
+                                    if (mat.map) {
+                                        mat.map.anisotropy = 16;
+                                    }
+                                    
+                                } else {
+                                    // 🏎️ ARABA - NORMAL BOYALI YÜZEY, METALLİK YOK!
+                                    mat.metalness = 0.0;  // 1.0 → 0.0 METALLİK KAPALI!
+                                    mat.roughness = 0.5;  // Normal boyalı yüzey
+                                    
+                                    // ❌ envMap YOK!
+                                    mat.envMap = null;
+                                    mat.envMapIntensity = 0;
+                                    
+                                    // Clearcoat yok
+                                    mat.clearcoat = 0;
+                                    mat.clearcoatRoughness = 0;
+                                    
+                                    // IOR ve reflectivity de sıfırla
+                                    mat.reflectivity = 0;
+                                    
+                                }
+                                
+                                const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+                                
+                                if (mat.map) {
+                                    mat.map.anisotropy = maxAnisotropy;
+                                    mat.map.minFilter = THREE.LinearMipmapLinearFilter;
+                                    mat.map.magFilter = THREE.LinearFilter;
+                                    mat.map.wrapS = THREE.RepeatWrapping;
+                                    mat.map.wrapT = THREE.RepeatWrapping;
+                                    mat.map.encoding = THREE.sRGBEncoding;
+                                    mat.map.needsUpdate = true;
+                                }
+                                if (mat.normalMap) {
+                                    mat.normalMap.anisotropy = maxAnisotropy;
+                                    mat.normalMap.minFilter = THREE.LinearMipmapLinearFilter;
+                                    mat.normalMap.magFilter = THREE.LinearFilter;
+                                    mat.normalMap.needsUpdate = true;
+                                }
+                                if (mat.roughnessMap) {
+                                    mat.roughnessMap.anisotropy = maxAnisotropy;
+                                    mat.roughnessMap.minFilter = THREE.LinearMipmapLinearFilter;
+                                    mat.roughnessMap.magFilter = THREE.LinearFilter;
+                                    mat.roughnessMap.needsUpdate = true;
+                                }
+                                if (mat.metalnessMap) {
+                                    mat.metalnessMap.anisotropy = maxAnisotropy;
+                                    mat.metalnessMap.minFilter = THREE.LinearMipmapLinearFilter;
+                                    mat.metalnessMap.magFilter = THREE.LinearFilter;
+                                    mat.metalnessMap.needsUpdate = true;
+                                }
+                                if (mat.aoMap) {
+                                    mat.aoMap.anisotropy = maxAnisotropy;
+                                    mat.aoMap.minFilter = THREE.LinearMipmapLinearFilter;
+                                    mat.aoMap.magFilter = THREE.LinearFilter;
+                                    mat.aoMap.needsUpdate = true;
+                                }
+                                if (mat.emissiveMap) {
+                                    mat.emissiveMap.anisotropy = maxAnisotropy;
+                                    mat.emissiveMap.minFilter = THREE.LinearMipmapLinearFilter;
+                                    mat.emissiveMap.magFilter = THREE.LinearFilter;
+                                    mat.emissiveMap.needsUpdate = true;
+                                }
+                                
+                                mat.needsUpdate = true;
+                            });
+                        }
+                    }
+                });
+                
+                scene.add(trackMesh);
+                createPath();
+                createCar();
+                createMirrors();
+                setupControls();
+                
+                // 📱 Track yüklendi!
+                assetsLoaded.track = true;
+                checkAllLoaded();
+            },
+            (xhr) => {
+                const percent = Math.round(xhr.loaded / xhr.total * 100);
+                document.getElementById('loading').innerHTML = 'Welcome to Su Su Land!<br>ARE YOU READY?<br><br>' + percent + '%';
+            },
+            (error) => {
+                document.getElementById('loading').innerHTML = 'Welcome to Su Su Land!<br>Loading Error...';
+                // 📱 Hata olsa bile devam edelim
+                assetsLoaded.track = true;
+                checkAllLoaded();
+            }
+        );
+
+        function createPath() {
+            checkpoints = roadData.checkpoints.map(cp => 
+                new THREE.Vector3(
+                    cp.position.x * roadScale, 
+                    cp.position.y * roadScale, 
+                    cp.position.z * roadScale
+                )
+            );
+
+            const points = [];
+            for (let i = 0; i < checkpoints.length; i++) {
+                const cp1 = checkpoints[i];
+                const cp2 = checkpoints[(i + 1) % checkpoints.length];
+                const dist = cp1.distanceTo(cp2);
+                const heightDiff = Math.abs(cp2.y - cp1.y);
+                
+                const baseSegments = Math.max(100, Math.floor(dist / 0.1));
+                const heightBonus = Math.floor(heightDiff * 30);
+                const segments = baseSegments + heightBonus;
+                
+                for (let j = 0; j < segments; j++) {
+                    const t = j / segments;
+                    const point = new THREE.Vector3().lerpVectors(cp1, cp2, t);
+                    points.push(point);
+                }
+            }
+
+            pathCurve = new THREE.CatmullRomCurve3(points, true, 'catmullrom', 0.002);
+        }
+
+        function createMirrors() {
+            const mirrorLoader = new THREE.GLTFLoader();
+            
+            // 🎨 MANUEL SATIRLANDIRMA - HER CÜMLE ÖZEL OLARAK HAZIRLANMIŞ!
+            function getManualLines(text) {
+                // HER CÜMLE İÇİN MANUEL SATIRLANDIRMA
+                const manualLayouts = {
+                    // ÖN YÜZ
+                    "Which voice isn't my inner voice?": ["Which voice", "isn't my inner voice", "?"],
+                    "WHO I AM?": ["WHO", "I AM", "?"],
+                    "Is it the me in the mirror driving the car, or the shadow inside me?": ["Is it the me in the mirror", "driving the car,", "or the shadow", "inside me", "?"],
+                    "When someone finally understands me, will I still be the same me?": ["When someone", "finally understands me,", "will I still be", "the same me", "?"],
+                    "How many times have I deceived my heart with my mind?": ["How many times", "have I deceived", "my heart", "with my mind", "?"],
+                    "To whom do I owe an apology?": ["To whom", "do I owe", "an apology", "?"],
+                    "Whose expectation has held my steering wheel?": ["Whose expectation", "has held my", "steering wheel", "?"],
+                    "Who should I call more often while I still can?": ["Who should I call", "more often", "while I still can", "?"],
+                    "What am I truly feeling right now?": ["What am I", "truly feeling", "right now", "?"],
+                    "Which boundary did I actually draw myself?": ["Which boundary", "did I actually", "draw myself", "?"],
+                    "Which burden should I have already let go of?": ["Which burden", "should I have already", "let go of", "?"],
+                    "Which small victory did I forget to celebrate?": ["Which small victory", "did I forget", "to celebrate", "?"],
+                    "Are \"road lines\" there to keep me inside an illusion?": ["Are \"road lines\" there", "to keep me inside", "an illusion", "?"],
+                    "Was it braver to run away or to stay?": ["Was it braver", "to run away", "or to stay", "?"],
+                    "How many times did I say the wrong things to the right person?": ["How many times", "did I say the wrong things", "to the right person", "?"],
+                    "Why am I here?": ["Why", "am I here", "?"],
+                    "Which color am I?": ["Which color", "am I", "?"],
+                    "If I took off my mask, who would be underneath?": ["If I took off my mask,", "who would be", "underneath", "?"],
+                    "Do I have to get lost to be found?": ["Do I have to", "get lost", "to be found", "?"],
+                    "Is the child inside me still speaking?": ["Is the child", "inside me", "still speaking", "?"],
+                    "Why are the answers to my questions always new questions?": ["Why are the answers", "to my questions", "always new questions", "?"],
+                    "Who am I looking for when I look in the mirror?": ["Who am I looking for", "when I look", "in the mirror", "?"],
+                    "Which moment did I save for eternity but never lived?": ["Which moment", "did I save for eternity", "but never lived", "?"],
+                    "Can I forgive myself?": ["Can I", "forgive myself", "?"],
+                    "Is not choosing also a choice?": ["Is not choosing", "also a choice", "?"],
+                    "If I went back, would I walk the same road again?": ["If I went back,", "would I walk", "the same road again", "?"],
+                    "If I could change one thing, what would it be?": ["If I could change", "one thing,", "what would it be", "?"],
+                    "What would have happened if I had said 'YES'?": ["What would have happened", "if I had said", "'YES'", "?"],
+                    "How many times have I wished upon the same star?": ["How many times", "have I wished upon", "the same star", "?"],
+                    "When did I lie to myself?": ["When did I", "lie to myself", "?"],
+                    "Which truth, if I accepted it, would set me free?": ["Which truth,", "if I accepted it,", "would set me free", "?"],
+                    "When will the white doves fly for us in the sky?": ["When will the", "white doves fly", "for us in the sky", "?"],
+                    "How many times have I been reborn? Sometimes without even realizing?": ["How many times", "have I been reborn", "?", "Sometimes without", "even realizing", "?"],
+                    "Is it harder to forgive or to forget?": ["Is it harder", "to forgive", "or to forget", "?"],
+                    "Is it really possible for someone to truly know me?": ["Is it really possible", "for someone", "to truly know me", "?"],
+                    "If my childhood self sat in the passenger seat, where would I take them?": ["If my childhood self", "sat in the passenger seat,", "where would I", "take them", "?"],
+                    "Does \"the right time\" really exist?": ["Does \"the right time\"", "really exist", "?"],
+                    "When will it rain?": ["When", "will it rain", "?"],
+                    "Too much, or too little?": ["Too much,", "or too little", "?"],
+                    "Should it be blue or orange?": ["Should it be", "blue", "or orange", "?"],
+                    "Does the life I didn't choose, miss me?": ["Does the life", "I didn't choose,", "miss me", "?"],
+                    "If my emotions were a museum, which piece would be the most broken?": ["If my emotions", "were a museum,", "which piece would be", "the most broken", "?"],
+                    "What would change if I weren't afraid?": ["What would change", "if I weren't", "afraid", "?"],
+                    "What should I eat today?": ["What should I", "eat today", "?"],
+                    "Who would I be if I lived in an era without technology?": ["Who would I be", "if I lived in an era", "without technology", "?"],
+                    "What does \"normal\" even mean?": ["What does", "\"normal\"", "even mean", "?"],
+                    "What if the universe is leaving me small clues and I just don't notice them?": ["What if the universe", "is leaving me small clues", "and I just don't", "notice them", "?"],
+                    "If I had a magic wand, what's the first thing I'd change?": ["If I had a magic wand,", "what's the first thing", "I'd change", "?"],
+                    "Where is my home — my true home?": ["Where is my home", "—", "my true home", "?"],
+                    "If I found a time machine, which date would I choose?": ["If I found", "a time machine,", "which date would", "I choose", "?"],
+                    "Why haven't they invited me to give a TEDx talk yet?!": ["Why haven't they", "invited me to give", "a TEDx talk yet", "?!"],
+                    "When will I find the courage to face my greatest fear?": ["When will I find", "the courage to face", "my greatest fear", "?"],
+                    "Do I know where I'm going?": ["Do I know", "where I'm going", "?"],
+                    "What truly makes me happy?": ["What truly", "makes me happy", "?"],
+                    "Who's ready to dance with my soul?": ["Who's ready", "to dance", "with my soul", "?"],
+                    "Is the night dark — or am I the one left in the dark?": ["Is the night dark", "—", "or am I the one", "left in the dark", "?"],
+                    "Am I still innocent?": ["Am I", "still innocent", "?"],
+                    "Will all wars end one day?": ["Will all wars", "end one day", "?"],
+                    
+                    // ARKA YÜZ
+                    "Do I want to be invisible, or too visible?": ["Do I want", "to be invisible,", "or too visible", "?"],
+                    "LESS is more?": ["LESS", "is more", "?"],
+                    "Is this a grail?": ["Is this", "a grail", "?"],
+                    "Could I belong to a place I've never been before?": ["Could I belong", "to a place", "I've never been before", "?"],
+                    "When was the last time I wasn't trying to catch up with something?": ["When was the last time", "I wasn't trying", "to catch up", "with something", "?"],
+                    "Could what makes me who I am be a moment I never actually lived?": ["Could what makes me", "who I am", "be a moment", "I never actually lived", "?"],
+                    "What song is playing in the background of my life?": ["What song is playing", "in the background", "of my life", "?"],
+                    "The things I thought were my fault — did they really come from me?": ["The things I thought", "were my fault", "—", "did they really", "come from me", "?"],
+                    "What if the path I chose is the wrong one?": ["What if the path", "I chose", "is the wrong one", "?"],
+                    "Is this running away from uncertainty, or trying to take control?": ["Is this running away", "from uncertainty,", "or trying to", "take control", "?"],
+                    "What if I don't decide now, and the chance slips away?": ["What if I don't", "decide now,", "and the chance", "slips away", "?"],
+                    "Every \"yes\" or \"no\" I couldn't say — what emptiness did it create inside me?": ["Every \"yes\" or \"no\"", "I couldn't say", "—", "what emptiness", "did it create", "inside me", "?"],
+                    "How much did I do out of my own will, and how much out of others' expectations?": ["How much did I do", "out of my own will,", "and how much out of", "others' expectations", "?"],
+                    "Which new path would make me more of who I am?": ["Which new path", "would make me", "more of who I am", "?"],
+                    "Am I more afraid of being rejected or of being misunderstood?": ["Am I more afraid", "of being rejected", "or of being", "misunderstood", "?"],
+                    "Is there such a thing as the right choice?": ["Is there such a thing", "as the right choice", "?"],
+                    "With every breath, do we die a little, or are we born a little?": ["With every breath,", "do we die a little,", "or are we born", "a little", "?"],
+                    "What was I really afraid of?": ["What was I", "really afraid of", "?"],
+                    "Who did I see the last time I looked in the mirror?": ["Who did I see", "the last time", "I looked in the mirror", "?"],
+                    "Which unsaid sentence still echoes inside me?": ["Which unsaid sentence", "still echoes", "inside me", "?"],
+                    "Where does infinity begin?": ["Where does", "infinity", "begin", "?"],
+                    "When was the last time I was truly in the present?": ["When was the last time", "I was truly", "in the present", "?"],
+                    "What is death?": ["What is", "death", "?"],
+                    "What is life?": ["What is", "life", "?"],
+                    "What question am I the answer to?": ["What question", "am I the answer to", "?"],
+                    "Will we meet in heaven?": ["Will we meet", "in heaven", "?"],
+                    "Who stole my light?": ["Who stole", "my light", "?"],
+                    "Where could the other sock be that I couldn't find the other day?": ["Where could", "the other sock be", "that I couldn't find", "the other day", "?"],
+                    "How many times have I risen from my ashes like a phoenix?": ["How many times", "have I risen", "from my ashes", "like a phoenix", "?"],
+                    "What will fill this void?": ["What will fill", "this void", "?"],
+                    "Is what I see real or is it a dream?": ["Is what I see", "real", "or is it a dream", "?"],
+                    "In my fight with the past, will I ever be proven right?": ["In my fight", "with the past,", "will I ever be", "proven right", "?"],
+                    "Why am I crying? Why can't I cry?": ["Why am I crying", "?", "Why can't I cry", "?"],
+                    "Is ownership a digital echo of existence?": ["Is ownership", "a digital echo", "of existence", "?"],
+                    "Which NFT I own is the artist's attempt at immortality?": ["Which NFT I own", "is the artist's attempt", "at immortality", "?"],
+                    "Which pieces in my collection do I keep not in my home or my wallet, but in my heart?": ["Which pieces", "in my collection", "do I keep not", "in my home or my wallet,", "but in my heart", "?"],
+                    "Does infinite access diminish meaning?": ["Does infinite access", "diminish meaning", "?"],
+                    "While searching for a 'Grail' piece, what absence am I truly seeking?": ["While searching", "for a 'Grail' piece,", "what absence", "am I truly seeking", "?"],
+                    "Does poetry name colors, or do colors give birth to poetry?": ["Does poetry", "name colors,", "or do colors", "give birth to poetry", "?"],
+                    "With which color would I paint my favorite poem?": ["With which color", "would I paint", "my favorite poem", "?"],
+                    "Does the value of art arise from its aesthetics or from its confession?": ["Does the value of art", "arise from its aesthetics", "or from", "its confession", "?"],
+                    "Which brushstroke replaces a real dream?": ["Which brushstroke", "replaces", "a real dream", "?"],
+                    "Is the vibration of colors a universal language or a personal scream?": ["Is the vibration", "of colors", "a universal language", "or a personal scream", "?"],
+                    "Can an artwork of art ever truly be considered 'complete'?": ["Can an artwork of art", "ever truly be considered", "'complete'", "?"],
+                    "Is art a form of rebellion, or a space of reconciliation?": ["Is art a form", "of rebellion,", "or a space", "of reconciliation", "?"],
+                    "Who is ready to dance with my soul?": ["Who is ready", "to dance", "with my soul", "?"],
+                    "Is the night dark, or am I the one left in darkness?": ["Is the night dark,", "or am I the one", "left in darkness", "?"],
+                    "Why does a poisonous familiarity feel safer than a healthy unknown?": ["Why does", "a poisonous familiarity", "feel safer than", "a healthy unknown", "?"],
+                    "Will this pain ever serve a purpose one day?": ["Will this pain", "ever serve a purpose", "one day", "?"],
+                    "Do they love me for my own light, or because I can hold their shadows within me?": ["Do they love me", "for my own light,", "or because I can hold", "their shadows within me", "?"],
+                    "Will I win?": ["Will I", "win", "?"],
+                    "WHY?": ["WHY", "?"],
+                    "HOW?": ["HOW", "?"],
+                    "WHEN?": ["WHEN", "?"],
+                    "What is the matrix ulan?": ["What is", "the matrix ulan", "?"]
+                };
+                
+                return manualLayouts[text] || [text];
+            }
+            
+            function createTextTexture(text, width = isMobile ? 1024 : 2048, height = isMobile ? 512 : 1024) {  // 📱 Mobilde yarı boyut!
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, width, height);
+                
+                const lines = getManualLines(text);
+                const lineCount = lines.length;
+                
+                // MİNİMUM PADDING
+                const paddingX = 1;
+                const paddingY = 1;
+                const usableWidth = width - (paddingX * 2);
+                const usableHeight = height - (paddingY * 2);
+                
+                // BÜYÜK BAŞLANGIÇ FONTLARI!
+                let fontSize;
+                if (lineCount <= 2) fontSize = 380;
+                else if (lineCount <= 3) fontSize = 340;
+                else if (lineCount <= 4) fontSize = 300;
+                else if (lineCount <= 5) fontSize = 270;
+                else if (lineCount <= 6) fontSize = 240;
+                else if (lineCount <= 7) fontSize = 220;
+                else if (lineCount <= 8) fontSize = 200;
+                else if (lineCount <= 9) fontSize = 180;
+                else if (lineCount <= 10) fontSize = 165;
+                else fontSize = 150;
+                
+                const lineHeightMultiplier = 1.02; // Sıkı!
+                
+                // En uzun satırı bul
+                ctx.font = `bold ${fontSize}px Arial`;
+                let maxLineWidth = 0;
+                let longestLine = '';
+                lines.forEach(line => {
+                    const lineWidth = ctx.measureText(line).width;
+                    if (lineWidth > maxLineWidth) {
+                        maxLineWidth = lineWidth;
+                        longestLine = line;
+                    }
+                });
+                
+                // GENİŞLİK KONTROLÜ - Dikkatli!
+                while (maxLineWidth > usableWidth && fontSize > 50) {
+                    fontSize -= 2;
+                    ctx.font = `bold ${fontSize}px Arial`;
+                    maxLineWidth = ctx.measureText(longestLine).width;
+                }
+                
+                // YÜKSEKLİK KONTROLÜ - Dikkatli!
+                let lineHeight = fontSize * lineHeightMultiplier;
+                let totalTextHeight = lineCount * lineHeight;
+                
+                while (totalTextHeight > usableHeight && fontSize > 50) {
+                    fontSize -= 2;
+                    lineHeight = fontSize * lineHeightMultiplier;
+                    totalTextHeight = lineCount * lineHeight;
+                }
+                
+                // Final ayarlar
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = `bold ${fontSize}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                // Satırları dikey ortala ve yaz - paddingY kullan!
+                const startY = paddingY + (usableHeight - totalTextHeight) / 2 + lineHeight / 2;
+                
+                lines.forEach((line, index) => {
+                    const y = startY + (index * lineHeight);
+                    ctx.fillText(line, width / 2, y);
+                });
+                
+                // DEBUG
+                
+                // Texture oluştur
+                const texture = new THREE.CanvasTexture(canvas);
+                texture.encoding = THREE.sRGBEncoding;
+                texture.needsUpdate = true;
+                
+                return texture;
+            }
+
+            function createTextTextureBack(text) {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const width = 2048;
+                const height = 1024;
+                canvas.width = width;
+                canvas.height = height;
+                ctx.clearRect(0, 0, width, height);
+                
+                const lines = getManualLines(text);
+                const lineCount = lines.length;
+                
+                // MİNİMUM PADDING
+                const paddingX = 1;
+                const paddingY = 1;
+                const usableWidth = width - (paddingX * 2);
+                const usableHeight = height - (paddingY * 2);
+                
+                // BÜYÜK BAŞLANGIÇ FONTLARI!
+                let fontSize;
+                if (lineCount <= 2) fontSize = 380;
+                else if (lineCount <= 3) fontSize = 340;
+                else if (lineCount <= 4) fontSize = 300;
+                else if (lineCount <= 5) fontSize = 270;
+                else if (lineCount <= 6) fontSize = 240;
+                else if (lineCount <= 7) fontSize = 220;
+                else if (lineCount <= 8) fontSize = 200;
+                else if (lineCount <= 9) fontSize = 180;
+                else if (lineCount <= 10) fontSize = 165;
+                else fontSize = 150;
+                
+                const lineHeightMultiplier = 1.02;
+                
+                // En uzun satırı bul
+                ctx.font = `bold ${fontSize}px Arial`;
+                let maxLineWidth = 0;
+                let longestLine = '';
+                lines.forEach(line => {
+                    const lineWidth = ctx.measureText(line).width;
+                    if (lineWidth > maxLineWidth) {
+                        maxLineWidth = lineWidth;
+                        longestLine = line;
+                    }
+                });
+                
+                // GENİŞLİK KONTROLÜ
+                while (maxLineWidth > usableWidth && fontSize > 50) {
+                    fontSize -= 2;
+                    ctx.font = `bold ${fontSize}px Arial`;
+                    maxLineWidth = ctx.measureText(longestLine).width;
+                }
+                
+                // YÜKSEKLİK KONTROLÜ
+                let lineHeight = fontSize * lineHeightMultiplier;
+                let totalTextHeight = lineCount * lineHeight;
+                
+                while (totalTextHeight > usableHeight && fontSize > 50) {
+                    fontSize -= 2;
+                    lineHeight = fontSize * lineHeightMultiplier;
+                    totalTextHeight = lineCount * lineHeight;
+                }
+                
+                // Yazıyı çiz
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = `bold ${fontSize}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                const startY = paddingY + (usableHeight - totalTextHeight) / 2 + lineHeight / 2;
+                
+                lines.forEach((line, index) => {
+                    const y = startY + (index * lineHeight);
+                    ctx.fillText(line, width / 2, y);
+                });
+                
+                
+                const texture = new THREE.CanvasTexture(canvas);
+                texture.encoding = THREE.sRGBEncoding;
+                texture.needsUpdate = true;
+                
+                return texture;
+            }
+
+            const mirrorQuestions = [
+                "Which voice isn't my inner voice?",
+                "WHO I AM?",
+                "Is it the me in the mirror driving the car, or the shadow inside me?",
+                "When someone finally understands me, will I still be the same me?",
+                "How many times have I deceived my heart with my mind?",
+                "To whom do I owe an apology?",
+                "Whose expectation has held my steering wheel?",
+                "Who should I call more often while I still can?",
+                "What am I truly feeling right now?",
+                "Which boundary did I actually draw myself?",
+                "Which burden should I have already let go of?",
+                "Which small victory did I forget to celebrate?",
+                "Are \"road lines\" there to keep me inside an illusion?",
+                "Was it braver to run away or to stay?",
+                "How many times did I say the wrong things to the right person?",
+                "Why am I here?",
+                "Which color am I?",
+                "If I took off my mask, who would be underneath?",
+                "Do I have to get lost to be found?",
+                "Is the child inside me still speaking?",
+                "Why are the answers to my questions always new questions?",
+                "Who am I looking for when I look in the mirror?",
+                "Which moment did I save for eternity but never lived?",
+                "Can I forgive myself?",
+                "Is not choosing also a choice?",
+                "If I went back, would I walk the same road again?",
+                "If I could change one thing, what would it be?",
+                "What would have happened if I had said 'YES'?",
+                "How many times have I wished upon the same star?",
+                "When did I lie to myself?",
+                "Which truth, if I accepted it, would set me free?",
+                "When will the white doves fly for us in the sky?",
+                "How many times have I been reborn? Sometimes without even realizing?",
+                "Is it harder to forgive or to forget?",
+                "Is it really possible for someone to truly know me?",
+                "If my childhood self sat in the passenger seat, where would I take them?",
+                "Does \"the right time\" really exist?",
+                "When will it rain?",
+                "Too much, or too little?",
+                "Should it be blue or orange?",
+                "Does the life I didn't choose, miss me?",
+                "If my emotions were a museum, which piece would be the most broken?",
+                "What would change if I weren't afraid?",
+                "What should I eat today?",
+                "Who would I be if I lived in an era without technology?",
+                "What does \"normal\" even mean?",
+                "What if the universe is leaving me small clues and I just don't notice them?",
+                "If I had a magic wand, what's the first thing I'd change?",
+                "Where is my home — my true home?",
+                "If I found a time machine, which date would I choose?",
+                "Why haven't they invited me to give a TEDx talk yet?!",
+                "When will I find the courage to face my greatest fear?",
+                "Do I know where I'm going?",
+                "What truly makes me happy?",
+                "Who's ready to dance with my soul?",
+                "Is the night dark — or am I the one left in the dark?",
+                "Am I still innocent?",
+                "Will all wars end one day?"
+            ];
+            
+            const mirrorQuestionsBack = [
+                "Do I want to be invisible, or too visible?",
+                "LESS is more?",
+                "Is this a grail?",
+                "Could I belong to a place I've never been before?",
+                "When was the last time I wasn't trying to catch up with something?",
+                "Could what makes me who I am be a moment I never actually lived?",
+                "What song is playing in the background of my life?",
+                "The things I thought were my fault — did they really come from me?",
+                "What if the path I chose is the wrong one?",
+                "Is this running away from uncertainty, or trying to take control?",
+                "What if I don't decide now, and the chance slips away?",
+                "Every \"yes\" or \"no\" I couldn't say — what emptiness did it create inside me?",
+                "How much did I do out of my own will, and how much out of others' expectations?",
+                "Which new path would make me more of who I am?",
+                "Am I more afraid of being rejected or of being misunderstood?",
+                "If I went back, would I walk the same road again?",
+                "Is there such a thing as the right choice?",
+                "With every breath, do we die a little, or are we born a little?",
+                "What was I really afraid of?",
+                "Who did I see the last time I looked in the mirror?",
+                "Which unsaid sentence still echoes inside me?",
+                "Where does infinity begin?",
+                "When was the last time I was truly in the present?",
+                "Whose expectation has held my steering wheel?",
+                "What is death?",
+                "What is life?",
+                "What question am I the answer to?",
+                "Will we meet in heaven?",
+                "Who stole my light?",
+                "Where could the other sock be that I couldn't find the other day?",
+                "How many times have I risen from my ashes like a phoenix?",
+                "What will fill this void?",
+                "Is what I see real or is it a dream?",
+                "In my fight with the past, will I ever be proven right?",
+                "Why am I crying? Why can't I cry?",
+                "Is ownership a digital echo of existence?",
+                "Which NFT I own is the artist's attempt at immortality?",
+                "Which pieces in my collection do I keep not in my home or my wallet, but in my heart?",
+                "Does infinite access diminish meaning?",
+                "While searching for a 'Grail' piece, what absence am I truly seeking?",
+                "Does poetry name colors, or do colors give birth to poetry?",
+                "With which color would I paint my favorite poem?",
+                "Does the value of art arise from its aesthetics or from its confession?",
+                "Which brushstroke replaces a real dream?",
+                "Is the vibration of colors a universal language or a personal scream?",
+                "Can an artwork of art ever truly be considered 'complete'?",
+                "Is art a form of rebellion, or a space of reconciliation?",
+                "Who is ready to dance with my soul?",
+                "Is the night dark, or am I the one left in darkness?",
+                "Am I still innocent?",
+                "Why does a poisonous familiarity feel safer than a healthy unknown?",
+                "Will this pain ever serve a purpose one day?",
+                "Do they love me for my own light, or because I can hold their shadows within me?",
+                "Will I win?",
+                "WHY?",
+                "HOW?",
+                "WHEN?",
+                "What is the matrix ulan?"
+            ];
+            
+            let mirrorIndex = 0; // Her ayna için index
+            
+            const mirrorData = [
+                {"id":1,"type":"round","position":{"x":-101.024,"y":1.4,"z":13.306},"rotation":{"x":0,"y":256.155,"z":0},"scale":{"x":0.6,"y":0.6,"z":0.6}},
+                {"id":3,"type":"round","position":{"x":-104.281,"y":-1.2,"z":-1.051},"rotation":{"x":0,"y":260.52,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":5,"type":"round","position":{"x":-102.098,"y":2.458,"z":-14.478},"rotation":{"x":0,"y":258.208,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":6,"type":"round","position":{"x":-100.417,"y":2.414,"z":-21.125},"rotation":{"x":0,"y":259.957,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":7,"type":"round","position":{"x":-97.435,"y":2.393,"z":-26.899},"rotation":{"x":0,"y":261.528,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":10,"type":"round","position":{"x":-83.427,"y":2.401,"z":-40.608},"rotation":{"x":0,"y":259.005,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":11,"type":"round","position":{"x":-76.818,"y":2.412,"z":-43.512},"rotation":{"x":0,"y":260.051,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":12,"type":"round","position":{"x":-70.209,"y":2.423,"z":-46.416},"rotation":{"x":0,"y":261.071,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":13,"type":"round","position":{"x":-63.388,"y":-0.5,"z":-47.651},"rotation":{"x":0,"y":262.12,"z":0},"scale":{"x":0.9,"y":0.9,"z":0.9}},
+                {"id":17,"type":"round","position":{"x":-43.347,"y":-5.6,"z":-50.676},"rotation":{"x":0,"y":261.201,"z":0},"scale":{"x":0.7,"y":0.7,"z":0.7}},
+                {"id":19,"type":"round","position":{"x":-22.811,"y":2.479,"z":-32.932},"rotation":{"x":0,"y":258.601,"z":0},"scale":{"x":0.8,"y":0.8,"z":0.8}},
+                {"id":21,"type":"round","position":{"x":-14.133,"y":2.493,"z":-20.1},"rotation":{"x":0,"y":256.54,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":27,"type":"round","position":{"x":13.806,"y":2.484,"z":21.597},"rotation":{"x":0,"y":256.238,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":33,"type":"round","position":{"x":50.092,"y":-7,"z":41.74},"rotation":{"x":0,"y":257.317,"z":0},"scale":{"x":0.9,"y":0.9,"z":0.9}},
+                {"id":36,"type":"round","position":{"x":72.844,"y":2.482,"z":44.532},"rotation":{"x":0,"y":260.76,"z":0},"scale":{"x":0.8,"y":0.8,"z":0.8}},
+                {"id":41,"type":"round","position":{"x":99.776,"y":-1.5,"z":20.448},"rotation":{"x":0,"y":256.97,"z":0},"scale":{"x":0.8,"y":0.8,"z":0.8}},
+                {"id":42,"type":"round","position":{"x":91.183,"y":2.429,"z":34.476},"rotation":{"x":0,"y":259.135,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":44,"type":"round","position":{"x":103.528,"y":2.522,"z":-1.804},"rotation":{"x":0,"y":257.269,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":47,"type":"round","position":{"x":96.404,"y":2.486,"z":-22.662},"rotation":{"x":0,"y":257.072,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":49,"type":"round","position":{"x":88.461,"y":2.647,"z":-35.953},"rotation":{"x":0,"y":260.352,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":52,"type":"round","position":{"x":66.326,"y":4.588,"z":-46.38},"rotation":{"x":0,"y":257.785,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":53,"type":"round","position":{"x":60.13,"y":5.604,"z":-47.34},"rotation":{"x":0,"y":258.825,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":56,"type":"round","position":{"x":43.982,"y":8.632,"z":-46.934},"rotation":{"x":0,"y":262.04,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":58,"type":"round","position":{"x":34.561,"y":0.4,"z":-43.397},"rotation":{"x":0,"y":258.448,"z":0},"scale":{"x":0.9,"y":0.9,"z":0.9}},
+                {"id":60,"type":"round","position":{"x":24.07,"y":13.306,"z":-38.074},"rotation":{"x":0,"y":261.827,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":64,"type":"round","position":{"x":12.293,"y":16.183,"z":-19.495},"rotation":{"x":0,"y":257.659,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":65,"type":"round","position":{"x":6.747,"y":16.486,"z":-12.499},"rotation":{"x":0,"y":259.863,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":68,"type":"round","position":{"x":-5.452,"y":17.052,"z":7.066},"rotation":{"x":0,"y":259.645,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":72,"type":"round","position":{"x":-22.309,"y":16.344,"z":18.882},"rotation":{"x":0,"y":259.211,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":74,"type":"round","position":{"x":-31.264,"y":14.104,"z":34.524},"rotation":{"x":0,"y":261.354,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":75,"type":"round","position":{"x":-46.756,"y":12.72,"z":39.633},"rotation":{"x":0,"y":262.375,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":2,"type":"rectangular","position":{"x":-93.201,"y":3.888,"z":28.491},"rotation":{"x":0,"y":258.364,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":4,"type":"rectangular","position":{"x":-103.132,"y":4.8,"z":16.345},"rotation":{"x":0,"y":256.292,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":8,"type":"rectangular","position":{"x":-103.004,"y":3.794,"z":-9.36},"rotation":{"x":0,"y":256.641,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":9,"type":"rectangular","position":{"x":-67.338,"y":5.1,"z":-44.288},"rotation":{"x":0,"y":257.884,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":14,"type":"rectangular","position":{"x":-96.942,"y":3.854,"z":-25.652},"rotation":{"x":0,"y":256.964,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":15,"type":"rectangular","position":{"x":-84.229,"y":3.871,"z":-39.37},"rotation":{"x":0,"y":258.214,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":18,"type":"rectangular","position":{"x":-16.976,"y":3.877,"z":-25.2},"rotation":{"x":0,"y":256.677,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":20,"type":"rectangular","position":{"x":-26.885,"y":3.886,"z":-38.323},"rotation":{"x":0,"y":260.663,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":22,"type":"rectangular","position":{"x":-78.201,"y":3.897,"z":41.189},"rotation":{"x":0,"y":258.751,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":26,"type":"rectangular","position":{"x":-8.015,"y":3.892,"z":-9.903},"rotation":{"x":0,"y":260.782,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":29,"type":"rectangular","position":{"x":9.639,"y":3.882,"z":15.962},"rotation":{"x":0,"y":259.186,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":31,"type":"rectangular","position":{"x":24.524,"y":3.889,"z":30.943},"rotation":{"x":0,"y":261.537,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":32,"type":"rectangular","position":{"x":33.228,"y":3.898,"z":40.835},"rotation":{"x":0,"y":256.296,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":34,"type":"rectangular","position":{"x":64.947,"y":3.906,"z":44.357},"rotation":{"x":0,"y":258.368,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":39,"type":"rectangular","position":{"x":91.357,"y":3.826,"z":28.054},"rotation":{"x":0,"y":259.252,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":43,"type":"rectangular","position":{"x":102.604,"y":3.862,"z":6.87},"rotation":{"x":0,"y":261.346,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":46,"type":"rectangular","position":{"x":105.297,"y":3.97,"z":-12.648},"rotation":{"x":0,"y":261.458,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":50,"type":"rectangular","position":{"x":94.68,"y":4.62,"z":-25.649},"rotation":{"x":0,"y":261.73,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":51,"type":"rectangular","position":{"x":75.771,"y":8.9,"z":-38.948},"rotation":{"x":0,"y":256.674,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":54,"type":"rectangular","position":{"x":56.013,"y":10.3,"z":-44.515},"rotation":{"x":0,"y":259.846,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":61,"type":"rectangular","position":{"x":38.377,"y":15.3,"z":-41.137},"rotation":{"x":0,"y":257.485,"z":0},"scale":{"x":0.8,"y":0.8,"z":0.8}},
+                {"id":62,"type":"rectangular","position":{"x":20.448,"y":16.386,"z":-28.648},"rotation":{"x":0,"y":259.561,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":66,"type":"rectangular","position":{"x":11.244,"y":18.189,"z":-16.164},"rotation":{"x":0,"y":262.005,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":69,"type":"rectangular","position":{"x":-1.287,"y":18.527,"z":3.459},"rotation":{"x":0,"y":261.364,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":73,"type":"rectangular","position":{"x":-18.397,"y":16.888,"z":24.645},"rotation":{"x":0,"y":260.316,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":76,"type":"rectangular","position":{"x":-37.984,"y":12.464,"z":40.528},"rotation":{"x":0,"y":257.15,"z":0},"scale":{"x":1,"y":1,"z":1}},
+                {"id":77,"type":"rectangular","position":{"x":-54.952,"y":10.536,"z":44.362},"rotation":{"x":0,"y":258.295,"z":0},"scale":{"x":1,"y":1,"z":1}}
+            ];
+
+            mirrorData.forEach((data) => {
+                const isRoundMirror = data.type === 'round';
+                const mirrorURL = isRoundMirror 
+                    ? 'https://busrasuhaydar.github.io/yuvarlak-ayna/ayna1.glb'
+                    : 'https://busrasuhaydar.github.io/ayna/ayna.glb';
+
+                // Her ayna için farklı sorular - ÖN ve ARKA!
+                const currentQuestionFront = mirrorQuestions[mirrorIndex % mirrorQuestions.length];
+                const currentQuestionBack = mirrorQuestionsBack[mirrorIndex % mirrorQuestionsBack.length];
+                const textTextureFront = createTextTexture(currentQuestionFront);
+                const textTextureBack = createTextTextureBack(currentQuestionBack); // ARKA YÜZ İÇİN ÖZEL FONKSİYON!
+                const currentMirrorIndex = mirrorIndex; // Bu ayna için index'i kaydet
+                mirrorIndex++;
+
+                mirrorsCreated++;
+
+                mirrorLoader.load(mirrorURL,
+                    function(gltf) {
+                        mirrorsLoaded++;
+                        const mirror = gltf.scene;
+                        
+                        mirror.position.set(data.position.x, data.position.y, data.position.z);
+                        
+                        const degToRad = Math.PI / 180;
+                        mirror.rotation.set(
+                            data.rotation.x * degToRad,
+                            data.rotation.y * degToRad,
+                            data.rotation.z * degToRad
+                        );
+                        
+                        mirror.scale.set(data.scale.x, data.scale.y, data.scale.z);
+                        
+                        let mirrorMesh = null;
+                        let maxArea = 0;
+                        
+                        mirror.traverse(function(child) {
+                            if (child.isMesh) {
+                                const bbox = new THREE.Box3().setFromObject(child);
+                                const size = bbox.getSize(new THREE.Vector3());
+                                const area = size.x * size.y;
+                                
+                                if (area > maxArea) {
+                                    maxArea = area;
+                                    mirrorMesh = child;
+                                }
+                                
+                                const mirrorMaterial = new THREE.MeshBasicMaterial({
+                                    envMap: cubeRenderTarget.texture,
+                                    reflectivity: 1.0,
+                                    refractionRatio: 0.98,
+                                    combine: THREE.MixOperation,
+                                    side: THREE.DoubleSide
+                                });
+                                
+                                child.material = mirrorMaterial;
+                                child.castShadow = false;
+                                child.receiveShadow = false;
+                                
+                                mirrorMeshes.push(child);
+                            }
+                        });
+                        
+                        scene.add(mirror);
+                        
+                        if (mirrorMesh) {
+                            mirrorMesh.geometry.computeBoundingBox();
+                            const bbox = mirrorMesh.geometry.boundingBox;
+                            const size = new THREE.Vector3();
+                            bbox.getSize(size);
+                            
+                            const axes = [
+                                { name: 'x', value: size.x },
+                                { name: 'y', value: size.y },
+                                { name: 'z', value: size.z }
+                            ];
+                            axes.sort((a, b) => a.value - b.value);
+                            const thinnestAxis = axes[0].name;
+                            
+                            const stickerWidth = axes[2].value * 0.5;
+                            const stickerHeight = axes[1].value * 0.3;
+                            
+                            const stickerMaterialFront = new THREE.MeshBasicMaterial({
+                                map: textTextureFront,
+                                transparent: true,
+                                side: THREE.DoubleSide, // FrontSide yerine DoubleSide!
+                                depthWrite: false,
+                                depthTest: true,
+                                alphaTest: 0.1,
+                                opacity: 1.0
+                            });
+                            const stickerGeometryFront = new THREE.PlaneGeometry(stickerWidth, stickerHeight);
+                            const stickerFront = new THREE.Mesh(stickerGeometryFront, stickerMaterialFront);
+                            
+                            const stickerMaterialBack = new THREE.MeshBasicMaterial({
+                                map: textTextureBack,
+                                transparent: true,
+                                side: THREE.DoubleSide, // FrontSide yerine DoubleSide!
+                                depthWrite: false,
+                                depthTest: true,
+                                alphaTest: 0.1,
+                                opacity: 1.0
+                            });
+                            const stickerGeometryBack = new THREE.PlaneGeometry(stickerWidth, stickerHeight);
+                            const stickerBack = new THREE.Mesh(stickerGeometryBack, stickerMaterialBack);
+                            
+                            if (thinnestAxis === 'x') {
+                                stickerFront.position.x = size.x / 2 + 0.05; // Daha uzak
+                                stickerFront.rotation.y = Math.PI / 2;
+                                if (isRoundMirror) {
+                                    stickerFront.scale.x = -1; // Geri ekle
+                                    stickerFront.rotation.z = -Math.PI * (66.5/180);
+                                }
+                                stickerBack.position.x = -size.x / 2 - 0.05; // Daha uzak
+                                stickerBack.rotation.y = -Math.PI / 2;
+                                if (isRoundMirror) {
+                                    stickerBack.scale.x = -1; // Geri ekle
+                                    stickerBack.rotation.z = Math.PI + Math.PI * (66.5/180); // 180° + 66.5° = düz!
+                                }
+                            } else if (thinnestAxis === 'y') {
+                                stickerFront.position.y = size.y / 2 + 0.05; // Daha uzak
+                                stickerFront.rotation.x = -Math.PI / 2;
+                                if (isRoundMirror) {
+                                    stickerFront.scale.x = -1; // Geri ekle
+                                    stickerFront.rotation.z = -Math.PI * (66.5/180);
+                                }
+                                stickerBack.position.y = -size.y / 2 - 0.05; // Daha uzak
+                                stickerBack.rotation.x = Math.PI / 2;
+                                if (isRoundMirror) {
+                                    stickerBack.scale.x = -1; // Geri ekle
+                                    stickerBack.rotation.z = Math.PI + Math.PI * (66.5/180); // 180° + 66.5° = düz!
+                                }
+                            } else {
+                                stickerFront.position.z = size.z / 2 + 0.05; // Daha uzak
+                                if (isRoundMirror) {
+                                    stickerFront.scale.x = -1; // Geri ekle
+                                    stickerFront.rotation.z = -Math.PI * (66.5/180);
+                                }
+                                stickerBack.position.z = -size.z / 2 - 0.05; // Daha uzak
+                                stickerBack.rotation.y = Math.PI;
+                                if (isRoundMirror) {
+                                    stickerBack.scale.x = -1; // Geri ekle
+                                    stickerBack.rotation.z = Math.PI + Math.PI * (66.5/180); // 180° + 66.5° = düz!
+                                }
+                            }
+                            
+                            mirrorMesh.add(stickerFront);
+                            mirrorMesh.add(stickerBack);
+                        }
+                        
+                        if (gltf.animations && gltf.animations.length > 0) {
+                            const mixer = new THREE.AnimationMixer(mirror);
+                            gltf.animations.forEach(clip => mixer.clipAction(clip).play());
+                            mirrorMixers.push(mixer);
+                        }
+                        
+                        // HER AYNA FARKLI YÖNE DÖNSÜN - Sırayla sağa/sola!
+                        const baseSpeed = isRoundMirror ? 0.01092 : 0.0104;
+                        const rotationSpeed = currentMirrorIndex % 2 === 0 ? baseSpeed : -baseSpeed;
+                        rotatingMirrors.push({ mesh: mirror, rotationSpeed: rotationSpeed });
+                        
+                        if (mirrorsLoaded % 15 === 0 || mirrorsLoaded === TOTAL_MIRRORS) {
+                        }
+                    },
+                    undefined,
+                    function(error) {
+                    }
+                );
+            });
+            
+        }
+
+        function findNearestPointOnPath(position) {
+            if (!pathCurve) return { t: 0, point: position, distance: 0 };
+            
+            let minDist = Infinity;
+            let bestT = 0;
+            let bestPoint = null;
+            
+            // ÇOK DAHA FAZLA SAMPLE! (200 → 500)
+            const samples = 500;
+            for (let i = 0; i < samples; i++) {
+                const t = i / samples;
+                const point = pathCurve.getPoint(t);
+                
+                // 🚨 FARKLI KAT KONTROLÜ!
+                const heightDiff = Math.abs(point.y - position.y);
+                
+                // Yükseklik farkı 3 birimden fazlaysa IGNORE ET! (Farklı kat!)
+                if (heightDiff > 3.0) continue;
+                
+                const dist = position.distanceTo(point);
+                
+                if (dist < minDist) {
+                    minDist = dist;
+                    bestT = t;
+                    bestPoint = point;
+                }
+            }
+            
+            // İKİNCİ AŞAMA: En yakın noktanın etrafında DAHA HASSAS arama!
+            if (bestPoint) {
+                const refineSamples = 50;
+                const refineRange = 2.0 / samples;
+                
+                for (let i = 0; i < refineSamples; i++) {
+                    const offset = (i / refineSamples - 0.5) * refineRange;
+                    const t = Math.max(0, Math.min(1, bestT + offset));
+                    const point = pathCurve.getPoint(t);
+                    
+                    // 🚨 Yine farklı kat kontrolü!
+                    const heightDiff = Math.abs(point.y - position.y);
+                    if (heightDiff > 3.0) continue;
+                    
+                    const dist = position.distanceTo(point);
+                    
+                    if (dist < minDist) {
+                        minDist = dist;
+                        bestT = t;
+                        bestPoint = point;
+                    }
+                }
+            }
+            
+            return { t: bestT, point: bestPoint, distance: minDist };
+        }
+
+        function resetCameraForMode(mode) {
+            if (mode === 0) {
+                cameraYaw = DEFAULT_CAMERA_SETTINGS.mode0.yaw;
+                cameraPitch = DEFAULT_CAMERA_SETTINGS.mode0.pitch;
+                cameraDistance = DEFAULT_CAMERA_SETTINGS.mode0.distance;
+                camera.fov = DEFAULT_CAMERA_SETTINGS.mode0.fov;
+            } else if (mode === 1) {
+                cameraPitch = DEFAULT_CAMERA_SETTINGS.mode1.pitch;
+                cameraYaw = DEFAULT_CAMERA_SETTINGS.mode1.yaw;
+                cameraDistance = DEFAULT_CAMERA_SETTINGS.mode1.distance;
+                camera.fov = DEFAULT_CAMERA_SETTINGS.mode1.fov;
+            } else if (mode === 2) {
+                cameraTheta = DEFAULT_CAMERA_SETTINGS.mode2.theta;
+                cameraPhi = DEFAULT_CAMERA_SETTINGS.mode2.phi;
+                cameraRadius = DEFAULT_CAMERA_SETTINGS.mode2.radius;
+                camera.fov = DEFAULT_CAMERA_SETTINGS.mode2.fov;
+            }
+            
+            camera.updateProjectionMatrix();
+            currentLookAt.set(0, 0, 0);
+        }
+
+        // 📱 MOBİL KONTROL DEĞİŞKENLERİ
+        const mobileControls = {
+            left: false,
+            right: false,
+            forward: false,
+            backward: false
+        };
+
+        function setupControls() {
+            // 🥽 VR OTOMATİK ALGILAMA - Sadece VR varsa göster!
+            const vrBtn = document.getElementById('vrBtn');
+            if (vrBtn && navigator.xr) {
+                navigator.xr.isSessionSupported('immersive-vr').then((supported) => {
+                    if (supported) {
+                        vrBtn.style.display = 'flex';  // VR varsa göster!
+                    }
+                });
+                
+                vrBtn.addEventListener('click', () => {
+                    if (navigator.xr) {
+                        navigator.xr.isSessionSupported('immersive-vr').then((supported) => {
+                            if (supported) {
+                                if (!renderer.xr.isPresenting) {
+                                    navigator.xr.requestSession('immersive-vr').then((session) => {
+                                        renderer.xr.setSession(session);
+                                        vrBtn.classList.add('vr-active');
+                                    });
+                                } else {
+                                    renderer.xr.getSession().end();
+                                    vrBtn.classList.remove('vr-active');
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // 🎮 GAMEPAD DESTEĞİ - Otomatik algılama!
+            let gamepadIndex = -1;
+            let gamepadConnected = false;
+            
+            window.addEventListener('gamepadconnected', (e) => {
+                gamepadIndex = e.gamepad.index;
+                gamepadConnected = true;
+                console.log('🎮 Gamepad connected:', e.gamepad.id);
+            });
+            
+            window.addEventListener('gamepaddisconnected', (e) => {
+                if (e.gamepad.index === gamepadIndex) {
+                    gamepadConnected = false;
+                    gamepadIndex = -1;
+                }
+            });
+            
+            // 🎮 Gamepad okuma fonksiyonu
+            function updateGamepad() {
+                if (!gamepadConnected) return;
+                
+                const gamepads = navigator.getGamepads();
+                if (!gamepads || gamepadIndex < 0) return;
+                
+                const gamepad = gamepads[gamepadIndex];
+                if (!gamepad) return;
+                
+                // Left stick - Direksiyon (X axis)
+                const stickX = gamepad.axes[0];  // Sol/Sağ
+                if (Math.abs(stickX) > 0.15) {  // Dead zone
+                    mobileControls.left = stickX < -0.15;
+                    mobileControls.right = stickX > 0.15;
+                } else {
+                    mobileControls.left = false;
+                    mobileControls.right = false;
+                }
+                
+                // Right trigger (RT) - İleri (axis 7 veya button 7)
+                const rightTrigger = gamepad.buttons[7] ? gamepad.buttons[7].value : 0;
+                mobileControls.forward = rightTrigger > 0.1;
+                
+                // Left trigger (LT) - Geri (axis 6 veya button 6)
+                const leftTrigger = gamepad.buttons[6] ? gamepad.buttons[6].value : 0;
+                mobileControls.backward = leftTrigger > 0.1;
+                
+                // A button (button 0) - İleri alternatif
+                if (gamepad.buttons[0] && gamepad.buttons[0].pressed) {
+                    mobileControls.forward = true;
+                }
+                
+                // B button (button 1) - Geri alternatif
+                if (gamepad.buttons[1] && gamepad.buttons[1].pressed) {
+                    mobileControls.backward = true;
+                }
+                
+                // Y button (button 3) - Kamera değiştir
+                if (gamepad.buttons[3] && gamepad.buttons[3].pressed && !gamepad.buttons[3].wasPressed) {
+                    cameraMode = (cameraMode + 1) % 3;
+                    resetCameraForMode(cameraMode);
+                    const cameraBtn = document.getElementById('cameraBtn');
+                    if (cameraBtn) cameraBtn.textContent = ['📷', '👁️', '🎥'][cameraMode];
+                }
+                gamepad.buttons[3].wasPressed = gamepad.buttons[3].pressed;
+            }
+            
+            // Gamepad'i her frame güncelle
+            const originalUpdateCar = updateCar;
+            updateCar = function() {
+                updateGamepad();
+                originalUpdateCar();
+            };
+            
+            // 📷 CAMERA MODE BUTTON
+            const cameraBtn = document.getElementById('cameraBtn');
+            const cameraIcons = ['📷', '👁️', '🎥'];
+            
+            if (cameraBtn) {
+                const cameraBtnHandler = (e) => {
+                    e.preventDefault();
+                    cameraMode = (cameraMode + 1) % 3;
+                    cameraBtn.textContent = cameraIcons[cameraMode];
+                    resetCameraForMode(cameraMode);
+                };
+                
+                cameraBtn.addEventListener('touchstart', cameraBtnHandler);
+                cameraBtn.addEventListener('click', cameraBtnHandler);
+            }
+            
+            // 🎮 STEERING CONTROLS
+            const leftArrow = document.getElementById('leftArrow');
+            const rightArrow = document.getElementById('rightArrow');
+            
+            if (leftArrow) {
+                leftArrow.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    mobileControls.left = true;
+                });
+                leftArrow.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    mobileControls.left = false;
+                });
+            }
+            
+            if (rightArrow) {
+                rightArrow.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    mobileControls.right = true;
+                });
+                rightArrow.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    mobileControls.right = false;
+                });
+            }
+            
+            // 🚀 ACCELERATION CONTROLS
+            const upArrow = document.getElementById('upArrow');
+            const downArrow = document.getElementById('downArrow');
+            
+            if (upArrow) {
+                upArrow.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    mobileControls.forward = true;
+                });
+                upArrow.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    mobileControls.forward = false;
+                });
+            }
+            
+            if (downArrow) {
+                downArrow.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    mobileControls.backward = true;
+                });
+                downArrow.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    mobileControls.backward = false;
+                });
+            }
+            
+            // DESKTOP KEYBOARD
+            document.addEventListener('keydown', (event) => {
+                keys[event.code] = true;
+                if (event.code === 'KeyC') {
+                    cameraMode = (cameraMode + 1) % 3;
+                    resetCameraForMode(cameraMode);
+                }
+            });
+            
+            document.addEventListener('keyup', (event) => { 
+                keys[event.code] = false; 
+            });
+
+            if (renderer && renderer.domElement) {
+                renderer.domElement.addEventListener('mousedown', (event) => {
+                    isMouseDown = true;
+                    mouseX = event.clientX;
+                    mouseY = event.clientY;
+                });
+
+                document.addEventListener('mousemove', (event) => {
+                    if (isMouseDown) {
+                        const deltaX = event.clientX - mouseX;
+                        const deltaY = event.clientY - mouseY;
+                        
+                        if (cameraMode === 0) {
+                            cameraYaw -= deltaX * 0.005;
+                            cameraPitch = Math.max(-Math.PI/2.3, Math.min(Math.PI/3, cameraPitch + deltaY * 0.005));
+                        } else if (cameraMode === 1) {
+                            cameraYaw -= deltaX * 0.005;
+                            cameraPitch = Math.max(-Math.PI/3, Math.min(Math.PI/6, cameraPitch + deltaY * 0.005));
+                        } else if (cameraMode === 2) {
+                            cameraTheta -= deltaX * 0.01;
+                            cameraPhi = Math.max(0.1, Math.min(Math.PI - 0.1, cameraPhi + deltaY * 0.01));
+                        }
+                        
+                        mouseX = event.clientX;
+                        mouseY = event.clientY;
+                    }
+                });
+
+                document.addEventListener('mouseup', () => { 
+                    isMouseDown = false; 
+                });
+
+                renderer.domElement.addEventListener('wheel', (event) => {
+                    event.preventDefault();
+                    const zoomFactor = event.deltaY > 0 ? 1.05 : 0.95;
+                    camera.fov = Math.max(20, Math.min(120, camera.fov * zoomFactor));
+                    camera.updateProjectionMatrix();
+                    
+                    if (cameraMode === 0) {
+                        cameraDistance = Math.max(5, Math.min(50, cameraDistance + event.deltaY * 0.05));
+                    } else if (cameraMode === 1) {
+                        cameraDistance = Math.max(0, Math.min(10, cameraDistance + event.deltaY * 0.02));
+                    } else if (cameraMode === 2) {
+                        cameraRadius = Math.max(10, Math.min(500, cameraRadius + event.deltaY * 0.5));
+                    }
+                }, { passive: false });
+            }
+        }
+
+        function updateCar() {
+            if (!car) return;
+            
+            // Desktop + Mobile kontrol birleşimi
+            const isForward = keys['ArrowUp'] || keys['KeyW'] || mobileControls.forward;
+            const isBackward = keys['ArrowDown'] || keys['KeyS'] || mobileControls.backward;
+            const isLeft = keys['ArrowLeft'] || keys['KeyA'] || mobileControls.left;
+            const isRight = keys['ArrowRight'] || keys['KeyD'] || mobileControls.right;
+            
+            if (isForward) {
+                carSpeed = Math.min(carSpeed + acceleration, maxSpeed);
+            } else if (isBackward) {
+                carSpeed = Math.max(carSpeed - acceleration, -maxSpeed * 0.5);
+            } else {
+                if (carSpeed > 0) carSpeed = Math.max(0, carSpeed - deceleration);
+                else if (carSpeed < 0) carSpeed = Math.min(0, carSpeed + deceleration);
+            }
+
+            if (isLeft) {
+                turnSpeed = Math.max(turnSpeed - 0.0015, -maxTurnSpeed);
+            } else if (isRight) {
+                turnSpeed = Math.min(turnSpeed + 0.0015, maxTurnSpeed);
+            } else {
+                turnSpeed *= 0.88;
+            }
+
+            if (Math.abs(carSpeed) > 0.001) {
+                car.rotation.y += turnSpeed * (carSpeed / maxSpeed) * 1.5;
+                const moveX = Math.sin(car.rotation.y) * carSpeed;
+                const moveZ = Math.cos(car.rotation.y) * carSpeed;
+                car.position.x -= moveX;
+                car.position.z -= moveZ;
+                smoothCarPosition.x = car.position.x;
+                smoothCarPosition.z = car.position.z;
+            }
+            
+            const nearest = findNearestPointOnPath(car.position);
+            
+            if (nearest && nearest.point) {
+                const maxDistance = 5.5;
+                const currentDistance = nearest.distance;
+                
+                if (currentDistance > maxDistance) {
+                    const overDistance = currentDistance - maxDistance;
+                    const distanceChange = currentDistance - lastRoadDistance;
+                    const smoothOverDistance = Math.abs(distanceChange) < 0.2 ? overDistance : overDistance * 0.7;
+                    
+                    const pullX = (nearest.point.x - car.position.x) / currentDistance;
+                    const pullZ = (nearest.point.z - car.position.z) / currentDistance;
+                    
+                    roadPullAccumulator.x += pullX * smoothOverDistance * 0.08;
+                    roadPullAccumulator.y += pullZ * smoothOverDistance * 0.08;
+                    roadPullAccumulator.x *= 0.85;
+                    roadPullAccumulator.y *= 0.85;
+                    
+                    car.position.x += roadPullAccumulator.x;
+                    car.position.z += roadPullAccumulator.y;
+                    smoothCarPosition.x = car.position.x;
+                    smoothCarPosition.z = car.position.z;
+                } else {
+                    roadPullAccumulator.x *= 0.9;
+                    roadPullAccumulator.y *= 0.9;
+                }
+                
+                lastRoadDistance = currentDistance;
+                
+                // 🎯 ULTRA PROFESYONEL RAMPA SİSTEMİ!
+                const currentRoadHeight = nearest.point.y;
+                
+                // 1️⃣ ÇİFT LOOKAHEAD - Yakın + Uzak! 🎯 ARTTIRILDI!
+                const nearLookahead = 4.0; // 2.5 → 4.0 Daha erken gör!
+                const farLookahead = 8.0;  // 5.0 → 8.0 Çok daha erken!
+                
+                // Yakın lookahead - ÖNÜNE BAK!
+                const nearPos = new THREE.Vector3(
+                    car.position.x + Math.sin(car.rotation.y) * nearLookahead,
+                    car.position.y,
+                    car.position.z + Math.cos(car.rotation.y) * nearLookahead
+                );
+                const nearNearest = findNearestPointOnPath(nearPos);
+                const nearHeight = nearNearest && nearNearest.point ? nearNearest.point.y : currentRoadHeight;
+                
+                // Uzak lookahead - ÖNÜNE BAK!
+                const farPos = new THREE.Vector3(
+                    car.position.x + Math.sin(car.rotation.y) * farLookahead,
+                    car.position.y,
+                    car.position.z + Math.cos(car.rotation.y) * farLookahead
+                );
+                const farNearest = findNearestPointOnPath(farPos);
+                const farHeight = farNearest && farNearest.point ? farNearest.point.y : currentRoadHeight;
+                
+                // 2️⃣ RAMPA ANALİZİ
+                const nearChange = nearHeight - currentRoadHeight;
+                const farChange = farHeight - currentRoadHeight;
+                const totalChange = farHeight - currentRoadHeight;
+                
+                // Rampa tipleri
+                const isStrongClimb = totalChange > 0.4; // Güçlü yukarı rampa
+                const isMildClimb = totalChange > 0.15 && totalChange <= 0.4; // Hafif yukarı
+                const isStrongDescend = totalChange < -0.4; // Güçlü aşağı rampa
+                const isMildDescend = totalChange < -0.15 && totalChange >= -0.4; // Hafif aşağı
+                const isFlat = Math.abs(totalChange) <= 0.15; // Düz yol
+                
+                // 3️⃣ AKILLI HEDEF YÜKSEKLİK + DOĞRU OFFSET!
+                let targetHeight;
+                let offset = 0.25; // 🎯 0.15 → 0.25 Biraz daha yukarı (ama hala düşük!)
+                let smoothMultiplier = 1.0;
+                
+                if (isStrongClimb) {
+                    // GÜÇLÜ YUKARI RAMPA - SADECE İLERİYE BAK! (Geçmiş umurumuzda değil!)
+                    targetHeight = farHeight * 0.65 + nearHeight * 0.35 + currentRoadHeight * 0.0;  // 🎯 Current = 0!
+                    smoothMultiplier = 0.95;  // 1.2 → 0.95 Biraz daha hızlı!
+                    
+                } else if (isMildClimb) {
+                    // HAFİF YUKARI RAMPA - İLERİYE ODAKLAN!
+                    targetHeight = farHeight * 0.55 + nearHeight * 0.45 + currentRoadHeight * 0.0;  // 🎯 Current = 0!
+                    smoothMultiplier = 1.0;  // 1.1 → 1.0 Dengeli!
+                    
+                } else if (isStrongDescend) {
+                    // GÜÇLÜ AŞAĞI RAMPA - İLERİYE BAK VE HIZLI İN!
+                    targetHeight = farHeight * 0.75 + nearHeight * 0.15 + currentRoadHeight * 0.10;  // 🎯 Far dominant!
+                    smoothMultiplier = 0.8;  // 1.5 → 0.8 HIZLI İNİŞ!
+                    
+                } else if (isMildDescend) {
+                    // HAFİF AŞAĞI RAMPA - İLERİYİ TAKİP ET!
+                    targetHeight = farHeight * 0.65 + nearHeight * 0.20 + currentRoadHeight * 0.15;  // 🎯 Far ağırlıklı!
+                    smoothMultiplier = 0.9;  // 1.3 → 0.9 Hızlı iniş!
+                    
+                } else {
+                    // DÜZ YOL
+                    targetHeight = currentRoadHeight;
+                    smoothMultiplier = 1.0;
+                }
+                
+                const desiredHeight = targetHeight + offset;
+                
+                // 🎯 ÖNCEDEn HAZIRLIK SİSTEMİ - Yumuşak hazırlık!
+                let preemptiveBoost = 0;
+                if (isStrongClimb && totalChange > 0.5) {
+                    // Güçlü rampa - hafif önceden hazırlık
+                    preemptiveBoost = totalChange * 0.15;  // 🎯 0.25 → 0.15 Daha yumuşak!
+                } else if (isMildClimb && totalChange > 0.2) {
+                    // Hafif rampa - minimal hazırlık
+                    preemptiveBoost = totalChange * 0.10;  // 🎯 0.15 → 0.10
+                } else if (isStrongDescend && totalChange < -0.5) {
+                    // Güçlü iniş - hızlı in!
+                    preemptiveBoost = totalChange * 0.30;
+                } else if (isMildDescend && totalChange < -0.2) {
+                    // Hafif iniş - erken in!
+                    preemptiveBoost = totalChange * 0.20;
+                }
+                
+                const finalDesiredHeight = desiredHeight + preemptiveBoost;
+                
+                // 4️⃣ ULTRA HASSAS SMOOTH - 🎯 RAMPA İÇİN OPTIMIZE!
+                const heightDiff = finalDesiredHeight - car.position.y;  // 🎯 ÖNCEDEn BOOST ile!
+                const absDiff = Math.abs(heightDiff);
+                
+                // Araba hızına göre bonus
+                const speed = Math.abs(carSpeed);
+                const speedBonus = Math.min(speed * 50, 0.3); // Max +0.3
+                
+                // 🎯 RAMPA BONUS - Dengeli! 
+                let responseMultiplier = 1.0;
+                if (isStrongClimb || isMildClimb) {
+                    responseMultiplier = 1.3;  // 1.5 → 1.3 Dengeli yükseliş!
+                } else if (isStrongDescend || isMildDescend) {
+                    responseMultiplier = 1.8;  // 2.0 → 1.8 Hızlı iniş!
+                }
+                
+                let baseSmoothFactor;
+                if (absDiff > 2.5) {
+                    baseSmoothFactor = 0.25;  // 0.18 → 0.25 Çok daha hızlı!
+                } else if (absDiff > 1.5) {
+                    baseSmoothFactor = 0.22;  // 0.15 → 0.22
+                } else if (absDiff > 0.8) {
+                    baseSmoothFactor = 0.18;  // 0.12 → 0.18
+                } else if (absDiff > 0.4) {
+                    baseSmoothFactor = 0.15;  // 0.10 → 0.15
+                } else if (absDiff > 0.15) {
+                    baseSmoothFactor = 0.12;  // 0.08 → 0.12
+                } else {
+                    baseSmoothFactor = 0.08;  // 0.06 → 0.08
+                }
+                
+                // Final smooth = (base * multiplier * responseMultiplier) + speed bonus
+                const finalSmoothFactor = Math.min((baseSmoothFactor * smoothMultiplier * responseMultiplier) + speedBonus, 0.55);  // 🎯 0.75 → 0.55 Dengeli!
+                
+                // 5️⃣ UPDATE
+                car.position.y += heightDiff * finalSmoothFactor;
+                smoothCarPosition.y = car.position.y;
+                smoothCarHeight = car.position.y;
+                
+                // 6️⃣ KUSURSUZ PITCH - Son ayarlar!
+                const carLength = 2.5; // Arabanın yarı uzunluğu
+                
+                // ARKA tekerlek pozisyonu
+                const rearWheelPos = new THREE.Vector3(
+                    car.position.x - Math.sin(car.rotation.y) * carLength,
+                    car.position.y,
+                    car.position.z - Math.cos(car.rotation.y) * carLength
+                );
+                const rearNearest = findNearestPointOnPath(rearWheelPos);
+                const rearRoadHeight = rearNearest && rearNearest.point ? rearNearest.point.y : currentRoadHeight;
+                
+                // ÖN tekerlek pozisyonu
+                const frontWheelPos = new THREE.Vector3(
+                    car.position.x + Math.sin(car.rotation.y) * carLength,
+                    car.position.y,
+                    car.position.z + Math.cos(car.rotation.y) * carLength
+                );
+                const frontNearest = findNearestPointOnPath(frontWheelPos);
+                const frontRoadHeight = frontNearest && frontNearest.point ? frontNearest.point.y : currentRoadHeight;
+                
+                // Pitch'i ön ve arka yükseklik farkından hesapla - KUSURSUZ!
+                const heightDifference = frontRoadHeight - rearRoadHeight;
+                const wheelBase = carLength * 2; // Toplam araç uzunluğu
+                
+                if (Math.abs(heightDifference) > 0.05) {
+                    // 🎯 EKSİ YOK! Pozitif yükseklik farkı = pozitif pitch = burun YUKARI!
+                    let targetPitch = Math.atan2(heightDifference, wheelBase);
+                    
+                    // PITCH ÇARPANI - ÇOK YUMUŞAK!
+                    targetPitch *= 0.40; // 🎯 0.80 → 0.40 (yarısı!)
+                    
+                    if (!car.userData.currentPitch) car.userData.currentPitch = 0;
+                    
+                    const pitchDiff = targetPitch - car.userData.currentPitch;
+                    const pitchSmooth = 0.24; // Hızlı tepki
+                    car.userData.currentPitch += pitchDiff * pitchSmooth;
+                    
+                    // Pitch limit
+                    const maxPitch = Math.PI / 5.2; // 35 derece
+                    car.userData.currentPitch = Math.max(-maxPitch, Math.min(maxPitch, car.userData.currentPitch));
+                    
+                    car.rotation.x = car.userData.currentPitch;
+                } else {
+                    // Düz yolda pitch yumuşak sıfırla
+                    if (!car.userData.currentPitch) car.userData.currentPitch = 0;
+                    car.userData.currentPitch *= 0.88;
+                    car.rotation.x = car.userData.currentPitch;
+                }
+            }
+        }
+
+        function updateCamera() {
+            if (!car || !camera) return;
+            const lerpFactor = 0.04;
+            
+            if (cameraMode === 0) {
+                const followDistance = cameraDistance;
+                const cameraHeight = 8;
+                const carDirection = new THREE.Vector3(0, 0, 1);
+                carDirection.applyQuaternion(car.quaternion);
+                carDirection.applyAxisAngle(new THREE.Vector3(0, 1, 0), cameraYaw);
+                const cameraOffset = carDirection.multiplyScalar(followDistance);
+                cameraOffset.y = cameraHeight + cameraPitch * 10;
+                targetCameraPosition.copy(car.position).add(cameraOffset);
+                targetCameraPosition.y = Math.max(2, targetCameraPosition.y);
+                
+                camera.position.lerp(targetCameraPosition, lerpFactor);
+                
+                const lookAhead = new THREE.Vector3(0, 0, -1);
+                lookAhead.applyQuaternion(car.quaternion);
+                targetLookAt.copy(car.position).add(lookAhead.multiplyScalar(10));
+                targetLookAt.y = Math.max(1, car.position.y + 2);
+                
+                if (!currentLookAt.x && !currentLookAt.y && !currentLookAt.z) {
+                    currentLookAt.copy(targetLookAt);
+                }
+                currentLookAt.lerp(targetLookAt, lerpFactor);
+                camera.lookAt(currentLookAt);
+                
+            } else if (cameraMode === 1) {
+                const cockpitOffset = new THREE.Vector3(0, 1.8, -2.8);
+                cockpitOffset.applyQuaternion(car.quaternion);
+                targetCameraPosition.copy(car.position).add(cockpitOffset);
+                targetCameraPosition.y = Math.max(2, targetCameraPosition.y);
+                camera.position.lerp(targetCameraPosition, lerpFactor * 6);
+                
+                const lookDirection = new THREE.Vector3(
+                    Math.sin(cameraYaw),
+                    cameraPitch,
+                    -Math.cos(cameraYaw)
+                );
+                lookDirection.normalize();
+                lookDirection.applyQuaternion(car.quaternion);
+                targetLookAt.copy(camera.position).add(lookDirection.multiplyScalar(100));
+                targetLookAt.y = Math.max(0.5, targetLookAt.y);
+                
+                if (!currentLookAt.x && !currentLookAt.y && !currentLookAt.z) {
+                    currentLookAt.copy(targetLookAt);
+                }
+                currentLookAt.lerp(targetLookAt, lerpFactor * 6);
+                camera.lookAt(currentLookAt);
+                
+            } else if (cameraMode === 2) {
+                const x = car.position.x + cameraRadius * Math.sin(cameraPhi) * Math.cos(cameraTheta);
+                const y = car.position.y + cameraRadius * Math.cos(cameraPhi);
+                const z = car.position.z + cameraRadius * Math.sin(cameraPhi) * Math.sin(cameraTheta);
+                targetCameraPosition.set(x, Math.max(2, y), z);
+                camera.position.lerp(targetCameraPosition, lerpFactor);
+                
+                targetLookAt.copy(car.position);
+                if (!currentLookAt.x && !currentLookAt.y && !currentLookAt.z) {
+                    currentLookAt.copy(targetLookAt);
+                }
+                currentLookAt.lerp(targetLookAt, lerpFactor);
+                camera.lookAt(currentLookAt);
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // 📱 SAYFA KAPANIRKEN TEMİZLİK
+        window.addEventListener('beforeunload', () => {
+            // Texture'ları temizle
+            universeTextures.forEach(tex => tex && tex.dispose());
+            pourTextures.forEach(tex => tex && tex.dispose());
+            
+            // Geometry'leri temizle
+            scene.traverse((obj) => {
+                if (obj.geometry) obj.geometry.dispose();
+                if (obj.material) {
+                    if (Array.isArray(obj.material)) {
+                        obj.material.forEach(mat => mat.dispose());
+                    } else {
+                        obj.material.dispose();
+                    }
+                }
+            });
+            
+            // Renderer'ı temizle
+            renderer.dispose();
+        });
+
+        // 📱 HAFIZA İZLEME VE TEMİZLİK SİSTEMİ
+        let lastMemoryCheck = Date.now();
+        function checkMemory() {
+            // Her 5 saniyede bir hafıza kontrolü
+            if (Date.now() - lastMemoryCheck > 5000) {
+                lastMemoryCheck = Date.now();
+                
+                // Renderer'ı temizle
+                if (renderer.info) {
+                    renderer.info.reset();
+                }
+                
+                // 📱 MOBİL: Kullanılmayan texture'ları temizle
+                if (isMobile && activeTextureIndices.size > MAX_LOADED_TEXTURES) {
+                    // En eski texture'ları bul ve temizle
+                    const toRemove = activeTextureIndices.size - MAX_LOADED_TEXTURES;
+                    let removed = 0;
+                    activeTextureIndices.forEach(key => {
+                        if (removed >= toRemove) return;
+                        const type = key[0];
+                        const index = parseInt(key.substring(1));
+                        
+                        // Aktif kullanımda olmayan texture'ı temizle
+                        if (type === 'u' && index !== currentUniverseIndex && index !== nextUniverseIndex) {
+                            if (universeTextures[index]) {
+                                universeTextures[index].dispose();
+                                delete universeTextures[index];
+                                activeTextureIndices.delete(key);
+                                removed++;
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
+        // ============ YENİ: AKIŞKAN SKYBOX BAŞLAT ============
+        loadFluidTextures();
+        
+        // 📱 LOADING EKRANI KALDIRMA
+        let assetsLoaded = {
+            car: false,
+            track: false,
+            skybox: false
+        };
+        
+        function checkAllLoaded() {
+            if (assetsLoaded.car && assetsLoaded.track && assetsLoaded.skybox) {
+                setTimeout(() => {
+                    const loading = document.getElementById('loading');
+                    if (loading) {
+                        loading.style.transition = 'opacity 0.5s';
+                        loading.style.opacity = '0';
+                        setTimeout(() => loading.style.display = 'none', 500);
+                    }
+                }, 500);
+            }
+        }
+
+        let frameCounter = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            frameCounter++;
+            
+            // 📱 Her 300 frame'de hafıza kontrolü (5 saniye)
+            if (frameCounter % 300 === 0) {
+                checkMemory();
+            }
+            
+            // ✨ Yıldızlar yavaşça dönüyor
+            stars.rotation.y += 0.0002;
+            
+            // 💫 Yıldız animasyonu - her 5 frame (daha az sık!)
+            if (frameCounter % 5 === 0) {
+                const starColors = stars.geometry.attributes.color.array;
+                const time = Date.now() * 0.0001;
+                
+                for (let i = 0; i < starColors.length; i += 3) {
+                    const phase = (time + i * 0.1) % (Math.PI * 2);
+                    const brightness = 0.6 + Math.sin(phase) * 0.4;
+                    starColors[i] = starColors[i + 1] = starColors[i + 2] = brightness;
+                }
+                stars.geometry.attributes.color.needsUpdate = true;
+            }
+            
+            // ============ YENİ: AKIŞKAN SKYBOX GÜNCELLE ============
+            updateFluidSkybox();
+            
+            updateCar();
+            updateCamera();
+            
+            if (car && spotLight) {
+                spotLight.position.copy(car.position);
+                spotLight.position.y += 25;
+                spotLight.target.position.copy(car.position);
+            }
+            
+            const delta = 0.016;
+            mirrorMixers.forEach(mixer => mixer.update(delta));
+            rotatingMirrors.forEach(obj => {
+                obj.mesh.rotation.y += obj.rotationSpeed;
+            });
+            
+            // 🪞 Mirror update - HER 6 FRAME (balanced!)
+            if (car && mirrorMeshes.length > 0 && frameCounter % 6 === 0) {
+                mirrorMeshes.forEach(mesh => mesh.visible = false);
+                
+                cubeCamera.position.copy(car.position);
+                cubeCamera.position.y += 3;
+                
+                if (fluidSkybox && fluidSkybox.material) {
+                    fluidSkybox.material.side = THREE.DoubleSide;
+                }
+                
+                cubeCamera.update(renderer, scene);
+                
+                if (fluidSkybox && fluidSkybox.material) {
+                    fluidSkybox.material.side = THREE.BackSide;
+                }
+                
+                mirrorMeshes.forEach(mesh => mesh.visible = true);
+            }
+            
+            // 🛣️ Road camera - HER 6 FRAME (balanced!)
+            if (car && trackMesh && frameCounter % 6 === 0) {
+                // 🎯 1. YOL + AYNALAR + ARABA GİZLE!
+                trackMesh.visible = false;
+                mirrorMeshes.forEach(mesh => mesh.visible = false);
+                if (car) car.visible = false;  // ARABA GİZLİ! ✅
+                
+                // 🎯 2. Kamera pozisyon
+                roadCubeCamera.position.copy(car.position);
+                roadCubeCamera.position.y = 5;
+                
+                // 🎯 3. SKYBOX DOUBLESIDE
+                if (fluidSkybox && fluidSkybox.material) {
+                    fluidSkybox.material.side = THREE.DoubleSide;
+                }
+                
+                // 🎯 4. GÜNCELLE - Sadece skybox!
+                roadCubeCamera.update(renderer, scene);
+                
+                // 🎯 5. SKYBOX BACKSIDE
+                if (fluidSkybox && fluidSkybox.material) {
+                    fluidSkybox.material.side = THREE.BackSide;
+                }
+                
+                // 🎯 6. YOL + AYNALAR + ARABA görünür!
+                trackMesh.visible = true;
+                mirrorMeshes.forEach(mesh => mesh.visible = true);
+                if (car) car.visible = true;  // ARABA GÖRÜNÜR! ✅
+            }
+            
+            renderer.render(scene, camera);
+        }
+
+        animate();
     </script>
 </body>
 </html>
